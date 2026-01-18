@@ -1,7 +1,6 @@
-
 import React from 'react';
 import Link from 'next/link';
-import { lessons } from './data/lessons';
+import { lessons } from '../data/lessons';
 
 export default function Home() {
   return (

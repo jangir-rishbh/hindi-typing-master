@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { notFound } from 'next/navigation';
-import TypingTutor from '../../components/TypingTutor';
-import { lessons } from '../../data/lessons';
+import TypingTutor from '../../../components/TypingTutor';
+import { lessons } from '../../../data/lessons';
+
+
+export const dynamic = 'force-static';
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
     return lessons.map((lesson) => ({
