@@ -5,9 +5,6 @@ import TypingTutor from '../../../components/TypingTutor';
 import { lessons } from '../../../data/lessons';
 
 
-export const dynamic = 'force-static';
-export const dynamicParams = false;
-
 export async function generateStaticParams() {
     return lessons.map((lesson) => ({
         id: lesson.id.toString(),
