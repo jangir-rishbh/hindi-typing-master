@@ -4,6 +4,12 @@ import { notFound } from 'next/navigation';
 import TypingTutor from '../../components/TypingTutor';
 import { lessons } from '../../data/lessons';
 
+export async function generateStaticParams() {
+    return lessons.map((lesson) => ({
+        id: lesson.id.toString(),
+    }));
+}
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }
