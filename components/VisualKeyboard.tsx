@@ -29,7 +29,8 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const isShift = key.id === 'ShiftLeft' || key.id === 'ShiftRight';
 
         // Premium Tactile Palettes
-        const fingerStyles = {
+
+        const fingerStyles: Record<string, string> = {
             'l-pinky': "bg-rose-50/50 border-rose-200 text-rose-700",
             'l-ring': "bg-orange-50/50 border-orange-200 text-orange-700",
             'l-middle': "bg-emerald-50/50 border-emerald-200 text-emerald-700",
@@ -45,8 +46,8 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const defaultStyle = "bg-white/80 border-slate-200 text-slate-700 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
         let colorStyle = defaultStyle;
 
-        if (key.finger && (fingerStyles as any)[key.finger]) {
-            colorStyle = (fingerStyles as any)[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
+        if (key.finger && fingerStyles[key.finger]) {
+            colorStyle = fingerStyles[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
         }
 
         // Active Target State

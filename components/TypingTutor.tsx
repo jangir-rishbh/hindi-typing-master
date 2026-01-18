@@ -251,7 +251,12 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
 
     return (
 
-        <div className="flex flex-col h-full max-w-7xl mx-auto p-2 md:p-4 gap-4 outline-none animate-fade-in" onKeyDown={handleKeyDown as any} tabIndex={0} ref={inputRef as any}>
+
+        <div
+            className="flex flex-col h-full max-w-7xl mx-auto p-2 md:p-4 gap-4 outline-none animate-fade-in"
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+        >
 
             {/* Header / Stats */}
             <div className="glass-panel p-4 rounded-[1.5rem] border border-white/20 shadow-lg flex flex-wrap justify-between items-center gap-4">
