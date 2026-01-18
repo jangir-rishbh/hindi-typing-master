@@ -11,24 +11,24 @@ export interface KeyData {
 export const keyboardRows: KeyData[][] = [
   // Row 1: Numbers
   [
-    { id: 'Backquote', label: '`', hindi: '़', shiftHindi: '?' },
-    { id: 'Digit1', label: '1', hindi: '१', shiftHindi: 'ऍ' },
-    { id: 'Digit2', label: '2', hindi: '२', shiftHindi: 'ॅ' },
-    { id: 'Digit3', label: '3', hindi: '३', shiftHindi: '्र' },
-    { id: 'Digit4', label: '4', hindi: '४', shiftHindi: 'र्' },
-    { id: 'Digit5', label: '5', hindi: '५', shiftHindi: 'ज्ञ' },
-    { id: 'Digit6', label: '6', hindi: '६', shiftHindi: 'त्र' },
-    { id: 'Digit7', label: '7', hindi: '७', shiftHindi: 'क्ष' },
-    { id: 'Digit8', label: '8', hindi: '८', shiftHindi: 'श्र' },
-    { id: 'Digit9', label: '9', hindi: '९', shiftHindi: '(' },
-    { id: 'Digit0', label: '0', hindi: '०', shiftHindi: ')' },
-    { id: 'Minus', label: '-', hindi: '-', shiftHindi: 'ः' },
-    { id: 'Equal', label: '=', hindi: 'ृ', shiftHindi: 'ऋ' },
-    { id: 'Backspace', label: '⌫', hindi: '', width: 'w-20' },
+    { id: 'Backquote', label: '`', hindi: '़', shiftHindi: '?', finger: 'l-pinky' },
+    { id: 'Digit1', label: '1', hindi: '१', shiftHindi: 'ऍ', finger: 'l-pinky' },
+    { id: 'Digit2', label: '2', hindi: '२', shiftHindi: 'ॅ', finger: 'l-ring' },
+    { id: 'Digit3', label: '3', hindi: '३', shiftHindi: '्र', finger: 'l-middle' },
+    { id: 'Digit4', label: '4', hindi: '४', shiftHindi: 'र्', finger: 'l-index' },
+    { id: 'Digit5', label: '5', hindi: '५', shiftHindi: 'ज्ञ', finger: 'l-index' },
+    { id: 'Digit6', label: '6', hindi: '६', shiftHindi: 'त्र', finger: 'r-index' },
+    { id: 'Digit7', label: '7', hindi: '७', shiftHindi: 'क्ष', finger: 'r-index' },
+    { id: 'Digit8', label: '8', hindi: '८', shiftHindi: 'श्र', finger: 'r-middle' },
+    { id: 'Digit9', label: '9', hindi: '९', shiftHindi: '(', finger: 'r-ring' },
+    { id: 'Digit0', label: '0', hindi: '०', shiftHindi: ')', finger: 'r-pinky' },
+    { id: 'Minus', label: '-', hindi: '-', shiftHindi: 'ः', finger: 'r-pinky' },
+    { id: 'Equal', label: '=', hindi: 'ृ', shiftHindi: 'ऋ', finger: 'r-pinky' },
+    { id: 'Backspace', label: '⌫', hindi: '', width: 'w-20', finger: 'r-pinky' },
   ],
   // Row 2: Top
   [
-    { id: 'Tab', label: 'Tab', hindi: '', width: 'w-20' },
+    { id: 'Tab', label: 'Tab', hindi: '', width: 'w-20', finger: 'l-pinky' },
     { id: 'KeyQ', label: 'Q', hindi: 'ौ', shiftHindi: 'औ', finger: 'l-pinky' },
     { id: 'KeyW', label: 'W', hindi: 'ै', shiftHindi: 'ऐ', finger: 'l-ring' },
     { id: 'KeyE', label: 'E', hindi: 'ा', shiftHindi: 'आ', finger: 'l-middle' },
@@ -43,11 +43,9 @@ export const keyboardRows: KeyData[][] = [
     { id: 'BracketRight', label: ']', hindi: '़', shiftHindi: 'ञ', finger: 'r-pinky' },
     { id: 'Backslash', label: '\\', hindi: 'ॉ', shiftHindi: 'ऑ', finger: 'r-pinky' },
   ],
-  // Row 3: Home (A, S ... are mapped as requested)
-  // A = ो, S = े, D = ्, F = ि
-  // J = र, K = क, L = त, ; = च
+  // Row 3: Home
   [
-    { id: 'CapsLock', label: 'Caps', hindi: '', width: 'w-24' },
+    { id: 'CapsLock', label: 'Caps', hindi: '', width: 'w-24', finger: 'l-pinky' },
     { id: 'KeyA', label: 'A', hindi: 'ो', shiftHindi: 'ओ', finger: 'l-pinky' },
     { id: 'KeyS', label: 'S', hindi: 'े', shiftHindi: 'ए', finger: 'l-ring' },
     { id: 'KeyD', label: 'D', hindi: '्', shiftHindi: 'अ', finger: 'l-middle' },
@@ -59,11 +57,11 @@ export const keyboardRows: KeyData[][] = [
     { id: 'KeyL', label: 'L', hindi: 'त', shiftHindi: 'थ', finger: 'r-ring' },
     { id: 'Semicolon', label: ';', hindi: 'च', shiftHindi: 'छ', finger: 'r-pinky' },
     { id: 'Quote', label: "'", hindi: 'ट', shiftHindi: 'ठ', finger: 'r-pinky' },
-    { id: 'Enter', label: 'Enter', hindi: '', width: 'w-24' },
+    { id: 'Enter', label: 'Enter', hindi: '', width: 'w-24', finger: 'r-pinky' },
   ],
   // Row 4: Bottom
   [
-    { id: 'ShiftLeft', label: 'Shift', hindi: '', width: 'w-32' },
+    { id: 'ShiftLeft', label: 'Shift', hindi: '', width: 'w-32', finger: 'l-pinky' },
     { id: 'KeyZ', label: 'Z', hindi: 'र्', shiftHindi: '्र', finger: 'l-pinky' },
     { id: 'KeyX', label: 'X', hindi: 'ं', shiftHindi: 'ँ', finger: 'l-ring' },
     { id: 'KeyC', label: 'C', hindi: 'म', shiftHindi: 'ण', finger: 'l-middle' },
@@ -74,10 +72,10 @@ export const keyboardRows: KeyData[][] = [
     { id: 'Comma', label: ',', hindi: ',', shiftHindi: 'ष', finger: 'r-middle' },
     { id: 'Period', label: '.', hindi: '.', shiftHindi: '।', finger: 'r-ring' },
     { id: 'Slash', label: '/', hindi: 'य', shiftHindi: '?', finger: 'r-pinky' },
-    { id: 'ShiftRight', label: 'Shift', hindi: '', width: 'w-32' },
+    { id: 'ShiftRight', label: 'Shift', hindi: '', width: 'w-32', finger: 'r-pinky' },
   ],
   // Row 5: Space
   [
-     { id: 'Space', label: 'Space', hindi: '', width: 'w-96' }
+    { id: 'Space', label: 'Space', hindi: '', width: 'w-96', finger: 'r-thumb' }
   ]
 ];

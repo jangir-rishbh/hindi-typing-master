@@ -3,9 +3,10 @@ import { Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
-  subsets: ["devanagari", "latin"],
+  subsets: ["devanagari"],
   variable: "--font-noto-sans-devanagari",
   weight: ["400", "500", "600", "700"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -19,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="hi">
-      <body className={`${notoSansDevanagari.variable} antialiased min-h-screen font-sans`}>
+    <html lang="hi" className={`${notoSansDevanagari.variable}`}>
+      <body className="antialiased min-h-screen font-sans">
         {children}
       </body>
     </html>
