@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:win": "node --max-old-space-size=8192 node_modules\\next\\dist\\bin\\next.js build",
     "start": "next start",
     "lint": "next lint"
   },
