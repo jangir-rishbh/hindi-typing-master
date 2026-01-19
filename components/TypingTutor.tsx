@@ -197,26 +197,36 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                         <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                     </div>
                     <div>
-                        <h1 className="text-xl font-black bg-slate-900 bg-clip-text text-transparent">{lesson.title}</h1>
+                        <h1 className="text-lg font-black bg-slate-900 bg-clip-text text-transparent">{lesson.title}</h1>
                         <div className="flex items-center gap-2">
                             <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">{lesson.description}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 text-xs">
+                <div className="flex flex-wrap gap-2 text-xs items-center">
                     <div className="bg-slate-900 text-white min-w-[90px] p-1.5 px-3 rounded-xl flex flex-col items-center border border-white/10">
                         <span className="text-[8px] font-black uppercase text-white/40 mb-0.5">Time</span>
-                        <span className="text-lg font-black">{formatTime(timeLeft)}</span>
+                        <span className="text-base font-black">{formatTime(timeLeft)}</span>
                     </div>
                     <div className="glass-card min-w-[80px] p-1.5 px-3 rounded-xl flex flex-col items-center border border-slate-200">
                         <span className="text-[8px] font-black uppercase text-slate-400 mb-0.5">WPM</span>
-                        <span className="text-lg font-black text-primary">{stats.wpm}</span>
+                        <span className="text-base font-black text-primary">{stats.wpm}</span>
                     </div>
                     <div className="glass-card min-w-[80px] p-1.5 px-3 rounded-xl flex flex-col items-center border border-slate-200">
                         <span className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Accuracy</span>
-                        <span className="text-lg font-black text-secondary">{stats.accuracy}%</span>
+                        <span className="text-base font-black text-secondary">{stats.accuracy}%</span>
                     </div>
+                    <button 
+                        onClick={() => setCompleted(true)}
+                        disabled={completed || !started}
+                        className="bg-primary hover:bg-primary-dark text-white font-black px-4 py-2 rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-xs">Submit Test</span>
+                    </button>
                 </div>
             </div>
 
@@ -224,26 +234,37 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             <div className="glass-panel p-4 md:p-6 rounded-[1.5rem] shadow-xl border-white/30 flex flex-col items-center gap-4 relative overflow-hidden min-h-[180px] justify-center">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
 
-                <div className="flex flex-wrap justify-center relative z-10">
-                    {words.slice(currentWordIndex, currentWordIndex + 1).map((word, idx) => {
-                        const isCurrent = true;
+                <div className="flex flex-wrap justify-center gap-6 relative z-10">
+                    {words.slice(currentWordIndex, currentWordIndex + 3).map((word, idx) => {
+                        const isCurrent = idx === 0;
+                        const currentWord = words[currentWordIndex];
+                        const isSameWord = word === currentWord;
+                        
+                        if (!isSameWord) return null;
+                        
                         return (
-                            <div key={currentWordIndex} className="flex flex-col items-center transition-all duration-500 scale-110">
-                                <div className={`hindi-text text-4xl md:text-5xl font-bold p-4 rounded-2xl transition-all bg-primary/10 text-primary shadow-[0_10px_30px_-10px_rgba(99,102,241,0.4)] border-2 border-primary/20`}>
+                            <div key={`${currentWordIndex}-${idx}`} className={`flex flex-col items-center transition-all duration-500 ${isCurrent ? 'scale-110' : 'scale-90 opacity-60'}`}>
+                                <div className={`hindi-text text-3xl md:text-4xl font-bold p-4 rounded-2xl transition-all ${isCurrent ? 'bg-primary/10 text-primary shadow-[0_10px_30px_-10px_rgba(99,102,241,0.4)] border-2 border-primary/20' : 'bg-slate-100 text-slate-600 border-2 border-slate-200'}`}>
                                     {word.split('').map((char, cIdx) => {
-                                        let charColor = "text-slate-800"; // Default
-                                        if (cIdx < charIndexInWord) {
-                                            charColor = wordTypedHistory[cIdx]?.isCorrect ? "text-emerald-500" : "text-rose-500";
+                                        if (isCurrent) {
+                                            let charColor = "text-slate-800"; // Default
+                                            if (cIdx < charIndexInWord) {
+                                                charColor = wordTypedHistory[cIdx]?.isCorrect ? "text-emerald-500" : "text-rose-500";
+                                            }
+                                            return <span key={cIdx} className={charColor}>{char}</span>;
+                                        } else {
+                                            return <span key={cIdx} className="text-slate-600">{char}</span>;
                                         }
-                                        return <span key={cIdx} className={charColor}>{char}</span>;
                                     })}
                                 </div>
-                                <div className="mt-4 flex gap-1.5 animate-fade-in">
-                                    {Array.from({ length: word.length }).map((_, i) => (
-                                        <div key={i} className={`h-1.5 w-6 rounded-full transition-all duration-300 ${i === charIndexInWord ? 'bg-primary animate-pulse w-9' : (i < charIndexInWord ? 'bg-emerald-500/30' : 'bg-slate-200')}`}></div>
-                                    ))}
-                                    <div className={`h-1.5 w-6 rounded-full border-2 border-dashed border-primary/40 ${charIndexInWord === word.length ? 'bg-primary animate-bounce' : 'bg-transparent'}`}></div>
-                                </div>
+                                {isCurrent && (
+                                    <div className="mt-4 flex gap-1.5 animate-fade-in">
+                                        {Array.from({ length: word.length }).map((_, i) => (
+                                            <div key={i} className={`h-1.5 w-6 rounded-full transition-all duration-300 ${i === charIndexInWord ? 'bg-primary animate-pulse w-9' : (i < charIndexInWord ? 'bg-emerald-500/30' : 'bg-slate-200')}`}></div>
+                                        ))}
+                                        <div className={`h-1.5 w-6 rounded-full border-2 border-dashed border-primary/40 ${charIndexInWord === word.length ? 'bg-primary animate-bounce' : 'bg-transparent'}`}></div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
@@ -270,15 +291,15 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             {completed && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center z-50 p-4 animate-fade-in">
                     <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-xl w-full text-center relative overflow-hidden">
-                        <h2 className="text-4xl font-black mb-8">Lesson Complete!</h2>
+                        <h2 className="text-3xl font-black mb-8">Lesson Complete!</h2>
                         <div className="grid grid-cols-2 gap-4 mb-10">
                             <div className="bg-slate-50 p-6 rounded-3xl">
                                 <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Speed</span>
-                                <div className="text-3xl font-black">{stats.wpm} WPM</div>
+                                <div className="text-2xl font-black">{stats.wpm} WPM</div>
                             </div>
                             <div className="bg-slate-50 p-6 rounded-3xl">
                                 <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Accuracy</span>
-                                <div className="text-3xl font-black">{stats.accuracy}%</div>
+                                <div className="text-2xl font-black">{stats.accuracy}%</div>
                             </div>
                         </div>
                         <div className="flex gap-4">

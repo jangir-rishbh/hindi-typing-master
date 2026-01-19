@@ -20,7 +20,7 @@ export default function Home() {
               </svg>
             </div>
 
-            <h1 className="text-5xl font-black mb-4 leading-tight">
+            <h1 className="text-4xl font-black mb-4 leading-tight">
               <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent italic">Hindi</span><br />
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Typing Master</span>
             </h1>
@@ -60,11 +60,11 @@ export default function Home() {
         <div className="w-full md:w-[65%] p-8 md:p-12 overflow-y-auto custom-scrollbar">
           <div className="flex justify-between items-end mb-10">
             <div>
-              <h2 className="text-3xl font-black text-slate-900">Learning Path</h2>
+              <h2 className="text-2xl font-black text-slate-900">Learning Path</h2>
               <p className="text-slate-400 text-sm mt-1 uppercase tracking-widest font-bold">Master the InScript layout step-by-step</p>
             </div>
             <div className="text-right">
-              <span className="text-4xl font-black text-slate-100 uppercase tracking-tighter">Course</span>
+              <span className="text-3xl font-black text-slate-100 uppercase tracking-tighter">Course</span>
             </div>
           </div>
 
@@ -76,7 +76,7 @@ export default function Home() {
                     {lesson.id.toString().padStart(2, '0')}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-black text-slate-800 group-hover:text-primary transition-colors">{lesson.title}</h3>
+                    <h3 className="text-base font-black text-slate-800 group-hover:text-primary transition-colors">{lesson.title}</h3>
                     <p className="text-sm text-slate-500 font-medium opacity-80">{lesson.description}</p>
                   </div>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
@@ -87,11 +87,11 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="mt-12 pt-8 border-t border-slate-200 text-center">
-            <div className="flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-600 italic">InScript Unicode Enabled</div>
-              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full"></div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-600 italic">Finger Guidance Pro</div>
+          <div className="mt-6 pt-4 border-t border-slate-200 text-center">
+            <div className="flex items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 transition-all">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-600 italic">InScript Unicode Enabled</div>
+              <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-600 italic">Finger Guidance Pro</div>
             </div>
           </div>
         </div>

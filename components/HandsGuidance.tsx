@@ -39,8 +39,8 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger }) => {
                     <div
                         key={key}
                         className={`absolute rounded-full transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 z-30 ${isFingerActive(key)
-                            ? 'bg-primary w-6 h-6 md:w-7 md:h-7 shadow-[0_0_30px_rgba(99,102,241,1)] scale-110'
-                            : 'bg-slate-300 w-2 h-2 md:w-2.5 md:h-2.5 opacity-40'
+                            ? 'bg-primary w-4 h-4 md:w-5 md:h-5 shadow-[0_0_20px_rgba(99,102,241,1)] scale-110'
+                            : 'bg-slate-300 w-1.5 h-1.5 md:w-2 md:h-2 opacity-40'
                             }`}
                         style={{
                             left: `${pos.x}%`,
@@ -50,7 +50,7 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger }) => {
                         {isFingerActive(key) && (
                             <>
                                 <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-40"></div>
-                                <div className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1 bg-primary text-white text-[9px] font-bold rounded-full shadow-lg border border-white/20">
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 bg-primary text-white text-[8px] font-bold rounded-full shadow-lg border border-white/20">
                                     {key.split('-')[1].toUpperCase()}
                                 </div>
                             </>

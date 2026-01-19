@@ -27,7 +27,7 @@ export default async function LessonPage({ params }: PageProps) {
     }
 
     return (
-        <main className="min-h-screen bg-tm-bg py-8">
+        <main className="min-h-screen bg-tm-bg pb-8">
             <TypingTutor lesson={lesson} />
         </main>
     );
