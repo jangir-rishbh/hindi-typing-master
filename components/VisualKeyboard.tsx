@@ -6,12 +6,14 @@ interface VisualKeyboardProps {
     activeKeyId?: string | null;     // The key the user SHOULD press
     pressedKeyId?: string | null;    // The key the user JUST pressed
     isShiftRequired?: boolean;       // If true, highlight Shift keys
+    activeLessonId?: number | null;  // New: Current lesson ID for highlighting rows
 }
 
 const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
     activeKeyId,
     pressedKeyId,
-    isShiftRequired = false
+    isShiftRequired = false,
+    activeLessonId = null
 }) => {
 
     const getKeyStyle = (key: KeyData) => {
@@ -28,7 +30,19 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const isPressed = key.id === pressedKeyId;
         const isShift = key.id === 'ShiftLeft' || key.id === 'ShiftRight';
 
-        const isHomeRow = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'].includes(key.id);
+        // Define key sets for different lessons
+        const homeRowKeys = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'];
+        const upperRowKeys = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash'];
+        const lowerRowKeys = ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash'];
+
+        let isLessonKey = false;
+        if (activeLessonId === 1) {
+            isLessonKey = homeRowKeys.includes(key.id);
+        } else if (activeLessonId === 2) {
+            isLessonKey = upperRowKeys.includes(key.id);
+        } else if (activeLessonId === 3) {
+            isLessonKey = lowerRowKeys.includes(key.id);
+        }
 
         // Premium Tactile Palettes
 
@@ -48,7 +62,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const defaultStyle = "bg-white/80 border-slate-200 text-slate-700 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
         let colorStyle = defaultStyle;
 
-        if (isHomeRow) {
+        if (isLessonKey) {
             colorStyle = "bg-yellow-100 border-yellow-300 text-yellow-800 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
         } else if (key.finger && fingerStyles[key.finger]) {
             colorStyle = fingerStyles[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";

@@ -281,7 +281,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
 
             {/* Keyboard Guidance (Full Width) */}
             <div className="mt-2 glass-panel p-4 md:p-6 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-4 w-full">
-                <VisualKeyboard activeKeyId={activeKeyId} pressedKeyId={pressedKey} isShiftRequired={isShiftRequired} />
+                <VisualKeyboard activeKeyId={activeKeyId} pressedKeyId={pressedKey} isShiftRequired={isShiftRequired} activeLessonId={lesson.id} />
                 <div className="w-full">
                     <HandsGuidance activeFinger={activeFinger} />
                 </div>
