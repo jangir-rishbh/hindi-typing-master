@@ -92,7 +92,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
 
             <div className="flex flex-col gap-2 relative z-10 pt-8">
                 {keyboardRows.map((row, rowIndex) => (
-                    <div key={rowIndex} className="flex w-full">
+                    <div key={rowIndex} className="flex w-full justify-center">
                         {row.map((key) => {
                             const isTarget = key.id === activeKeyId;
                             const isPressed = key.id === pressedKeyId;
@@ -106,16 +106,16 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                                     {/* Physical Keycap Top Surface */}
                                     <div className={`absolute inset-0 rounded-2xl transition-opacity ${isPressed ? 'bg-black/10' : 'bg-white/5 opacity-0 group-hover:opacity-100'}`}></div>
 
-                                    {/* English Legend (Subtle) */}
-                                    <span className={`absolute top-2 left-3 text-[10px] md:text-[11px] font-black tracking-tighter transition-all ${isTarget || isPressed ? 'opacity-40' : 'opacity-20'}`}>
-                                        {key.label === 'Control' ? 'CTRL' : key.label}
+                                    {/* English Legend (Clearly Visible) */}
+                                    <span className={`absolute top-2 left-3 english-legend transition-all ${isTarget || isPressed ? 'scale-110' : ''}`}>
+                                        {key.label === 'Control' ? 'CTRL' : key.label.toLowerCase()}
                                     </span>
 
                                     {/* Center Legend Container */}
                                     <div className="flex flex-col items-center justify-center pt-2 relative z-10">
-                                        {/* Shift Component */}
+                                        {/* Shift Component (Upper Legend) */}
                                         {key.shiftHindi && (
-                                            <span className={`text-[11px] md:text-[12px] hindi-text font-black transition-all transform ${isTarget || isPressed ? 'text-white' : (isShiftRequired ? 'text-primary scale-110' : 'opacity-30')}`}>
+                                            <span className={`text-[13px] md:text-[14px] hindi-text font-bold transition-all transform ${isTarget || isPressed ? 'text-white' : (isShiftRequired ? 'text-primary scale-110 opacity-100' : 'text-slate-600 opacity-80')}`}>
                                                 {key.shiftHindi}
                                             </span>
                                         )}

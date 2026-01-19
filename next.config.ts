@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* No custom distDir or invalid config as per user request */
+  poweredByHeader: false,
+  reactStrictMode: true,
 };
 
 export default nextConfig;

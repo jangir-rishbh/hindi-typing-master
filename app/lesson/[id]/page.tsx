@@ -11,6 +11,8 @@ export async function generateStaticParams() {
     }));
 }
 
+export const dynamicParams = true;
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }

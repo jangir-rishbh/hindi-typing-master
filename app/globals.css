@@ -107,6 +107,14 @@ select,
     opacity: 0.05;
     pointer-events: none;
   }
+
+  .english-legend {
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 11px;
+    opacity: 1 !important;
+    letter-spacing: -0.02em;
+  }
 }
 
 @keyframes fadeIn {
