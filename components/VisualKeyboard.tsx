@@ -28,6 +28,8 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const isPressed = key.id === pressedKeyId;
         const isShift = key.id === 'ShiftLeft' || key.id === 'ShiftRight';
 
+        const isHomeRow = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'].includes(key.id);
+
         // Premium Tactile Palettes
 
         const fingerStyles: Record<string, string> = {
@@ -46,7 +48,9 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const defaultStyle = "bg-white/80 border-slate-200 text-slate-700 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
         let colorStyle = defaultStyle;
 
-        if (key.finger && fingerStyles[key.finger]) {
+        if (isHomeRow) {
+            colorStyle = "bg-yellow-100 border-yellow-300 text-yellow-800 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
+        } else if (key.finger && fingerStyles[key.finger]) {
             colorStyle = fingerStyles[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
         }
 

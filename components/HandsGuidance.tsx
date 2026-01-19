@@ -12,22 +12,22 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger }) => {
 
     // Precisely adjusted positions for chatgpt.png (Realistic Hands)
     const fingerPositions: Record<string, { x: number; y: number }> = {
-        'l-pinky': { x: 23, y: 56 },
-        'l-ring': { x: 26, y: 39 },
-        'l-middle': { x: 33, y: 34 },
-        'l-index': { x: 40, y: 40 },
-        'l-thumb': { x: 42, y: 68 },
-        'r-thumb': { x: 58, y: 68 },
-        'r-index': { x: 60, y: 40 },
-        'r-middle': { x: 69, y: 34 },
-        'r-ring': { x: 74, y: 39 },
-        'r-pinky': { x: 78, y: 56 },
+        'l-pinky': { x: 23.5, y: 55 },
+        'l-ring': { x: 26.5, y: 38 },
+        'l-middle': { x: 33, y: 32 },
+        'l-index': { x: 40.5, y: 38 },
+        'l-thumb': { x: 42, y: 67 },
+        'r-thumb': { x: 58, y: 67 },
+        'r-index': { x: 60, y: 38 },
+        'r-middle': { x: 67, y: 32 },
+        'r-ring': { x: 73.5, y: 38 },
+        'r-pinky': { x: 77.5, y: 55 },
     };
 
     return (
         <div className="w-full mx-auto select-none pointer-events-none mb-8 group">
             {/* Main Relative Container for Image + Dots */}
-            <div className="relative w-full overflow-hidden rounded-[2rem] shadow-xl border border-slate-100 bg-white" style={{ height: '380px' }}>
+            <div className="relative w-full overflow-hidden rounded-[2rem] shadow-xl border border-slate-100 bg-white" style={{ height: '300px' }}>
                 <img
                     src="/images/chatgpt.png"
                     alt="Realistic Hands"
