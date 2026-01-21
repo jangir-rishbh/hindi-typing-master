@@ -33,7 +33,6 @@ const getKeyDataForChar = (char: string) => {
 
 export default function TypingTutor({ lesson }: TypingTutorProps) {
     const router = useRouter();
-    const LESSON_DURATION = 300; // 5 minutes in seconds
 
     // Transform lesson content into unique words repeated 3 times
     const words = useMemo(() => {
@@ -49,8 +48,10 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
 
     const [started, setStarted] = useState(false);
     const [startTime, setStartTime] = useState<number | null>(null);
-    const [timeLeft, setTimeLeft] = useState(LESSON_DURATION);
+    const [selectedTime, setSelectedTime] = useState<number | null>(null);
+    const [timeLeft, setTimeLeft] = useState(0);
     const [completed, setCompleted] = useState(false);
+    const [showTimeSelection, setShowTimeSelection] = useState(false);
     const [stats, setStats] = useState({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
 
     // New Progression State
@@ -64,11 +65,11 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     // Timer Logic
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (started && !completed) {
+        if (started && !completed && selectedTime) {
             interval = setInterval(() => {
                 const now = Date.now();
                 const elapsedSec = (now - (startTime || now)) / 1000;
-                const remaining = Math.max(0, LESSON_DURATION - Math.floor(elapsedSec));
+                const remaining = Math.max(0, selectedTime - Math.floor(elapsedSec));
 
                 setTimeLeft(remaining);
 
@@ -86,7 +87,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             }, 1000);
         }
         return () => clearInterval(interval);
-    }, [started, completed, startTime, stats.totalTyped]);
+    }, [started, completed, startTime, selectedTime, stats.totalTyped]);
 
     const getCharFromKey = (code: string, shift: boolean) => {
         if (code === 'Space') return ' ';
@@ -99,14 +100,9 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     };
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (completed) return;
+        if (completed || !selectedTime || !started) return;
         if (e.key === 'Backspace') { e.preventDefault(); return; }
         if (['Shift', 'Control', 'Alt', 'CapsLock', 'Tab'].includes(e.key)) return;
-
-        if (!started) {
-            setStarted(true);
-            setStartTime(Date.now());
-        }
 
         const mappedChar = getCharFromKey(e.code, e.shiftKey);
         if (!mappedChar) return;
@@ -207,7 +203,9 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                 <div className="flex flex-wrap gap-2 text-xs items-center">
                     <div className="bg-slate-900 text-white min-w-[90px] p-1.5 px-3 rounded-xl flex flex-col items-center border border-white/10">
                         <span className="text-[8px] font-black uppercase text-white/40 mb-0.5">Time</span>
-                        <span className="text-base font-black">{formatTime(timeLeft)}</span>
+                        <span className="text-base font-black">
+                            {selectedTime ? formatTime(timeLeft) : "--:--"}
+                        </span>
                     </div>
                     <div className="glass-card min-w-[80px] p-1.5 px-3 rounded-xl flex flex-col items-center border border-slate-200">
                         <span className="text-[8px] font-black uppercase text-slate-400 mb-0.5">WPM</span>
@@ -217,15 +215,15 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                         <span className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Accuracy</span>
                         <span className="text-base font-black text-secondary">{stats.accuracy}%</span>
                     </div>
-                    <button 
-                        onClick={() => setCompleted(true)}
-                        disabled={completed || !started}
+                    <button
+                        onClick={() => setShowTimeSelection(true)}
+                        disabled={started}
                         className="bg-primary hover:bg-primary-dark text-white font-black px-4 py-2 rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 active:scale-95"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="text-xs">Submit Test</span>
+                        <span className="text-xs">Start Lesson</span>
                     </button>
                 </div>
             </div>
@@ -270,7 +268,15 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                     })}
                 </div>
 
-                {!started && (
+                {!selectedTime && (
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-30 flex items-center justify-center rounded-[2rem]">
+                        <div className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest animate-pulse shadow-2xl">
+                            CLICK "START LESSON" TO SELECT TIME
+                        </div>
+                    </div>
+                )}
+
+                {selectedTime && !started && (
                     <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-30 flex items-center justify-center rounded-[2rem]">
                         <div className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest animate-pulse shadow-2xl">
                             START TYPING THE FIRST WORD TO BEGIN
@@ -287,23 +293,92 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                 </div>
             </div>
 
-            {/* Results Modal */}
-            {completed && (
+            {/* Time Selection Modal */}
+            {showTimeSelection && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center z-50 p-4 animate-fade-in">
                     <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-xl w-full text-center relative overflow-hidden">
+                        <h2 className="text-3xl font-black mb-8">Select Lesson Duration</h2>
+                        <p className="text-slate-600 mb-8">Choose how long you want to practice this lesson</p>
+
+                        <div className="grid grid-cols-3 gap-4 mb-8">
+                            {[5, 10, 15, 20, 30].map((minutes) => (
+                                <button
+                                    key={minutes}
+                                    onClick={() => {
+                                        setSelectedTime(minutes * 60);
+                                        setTimeLeft(minutes * 60);
+                                        setShowTimeSelection(false);
+                                        setStarted(true);
+                                        setStartTime(Date.now());
+                                    }}
+                                    className="bg-slate-50 hover:bg-primary hover:text-white p-6 rounded-3xl transition-all duration-300 border-2 border-slate-200 hover:border-primary"
+                                >
+                                    <div className="text-2xl font-black">{minutes}</div>
+                                    <div className="text-xs font-bold uppercase text-slate-400">Minutes</div>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => setShowTimeSelection(false)}
+                            className="bg-slate-100 hover:bg-slate-200 px-8 py-3 rounded-2xl font-black transition-all duration-300"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Results Modal */}
+            {completed && selectedTime && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-2xl w-full text-center relative overflow-hidden">
                         <h2 className="text-3xl font-black mb-8">Lesson Complete!</h2>
-                        <div className="grid grid-cols-2 gap-4 mb-10">
+
+                        <div className="grid grid-cols-3 gap-4 mb-10">
                             <div className="bg-slate-50 p-6 rounded-3xl">
-                                <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Speed</span>
-                                <div className="text-2xl font-black">{stats.wpm} WPM</div>
+                                <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Time Selected</span>
+                                <div className="text-2xl font-black">{selectedTime / 60} min</div>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-3xl">
+                                <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Characters Typed</span>
+                                <div className="text-2xl font-black">{stats.totalTyped}</div>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-3xl">
+                                <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Correct Characters</span>
+                                <div className="text-2xl font-black">{stats.totalTyped - stats.errors}</div>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-3xl">
+                                <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Errors</span>
+                                <div className="text-2xl font-black">{stats.errors}</div>
                             </div>
                             <div className="bg-slate-50 p-6 rounded-3xl">
                                 <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Accuracy</span>
                                 <div className="text-2xl font-black">{stats.accuracy}%</div>
                             </div>
+                            <div className="bg-slate-50 p-6 rounded-3xl">
+                                <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">WPM / CPM</span>
+                                <div className="text-2xl font-black">{stats.wpm} WPM</div>
+                            </div>
                         </div>
+
                         <div className="flex gap-4">
-                            <button onClick={() => window.location.reload()} className="flex-1 bg-slate-100 py-4 rounded-2xl font-black">Try Again</button>
+                            <button
+                                onClick={() => {
+                                    setStarted(false);
+                                    setStartTime(null);
+                                    setSelectedTime(null);
+                                    setTimeLeft(0);
+                                    setCompleted(false);
+                                    setCurrentWordIndex(0);
+                                    setCharIndexInWord(0);
+                                    setWordTypedHistory([]);
+                                    setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
+                                }}
+                                className="flex-1 bg-slate-100 py-4 rounded-2xl font-black"
+                            >
+                                Try Again
+                            </button>
                             <button onClick={() => router.push('/')} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black">Dashboard</button>
                         </div>
                     </div>
