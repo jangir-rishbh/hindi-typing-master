@@ -20,6 +20,28 @@ interface TypedChar {
 
 // Utility to find key data for a char
 const getKeyDataForChar = (char: string) => {
+    // Custom finger mappings for home row keys
+    const customFingerMappings: Record<string, string> = {
+        'र': 'l-pinky', // J key (र)
+        'े': 'l-ring',  // S key (े)
+        '्': 'l-pinky', // D key (्)
+        'ि': 'l-index', // F key (ि)
+        ' ': 'r-thumb'  // Space
+    };
+
+    // Check if this character has a custom finger mapping
+    if (customFingerMappings[char]) {
+        for (const row of keyboardRows) {
+            for (const key of row) {
+                if (key.hindi === char) return { id: key.id, shift: false, finger: customFingerMappings[char] };
+                if (key.shiftHindi === char) return { id: key.id, shift: true, finger: customFingerMappings[char] };
+                if (key.label === char) return { id: key.id, shift: false, finger: customFingerMappings[char] };
+            }
+        }
+        if (char === ' ') return { id: 'Space', shift: false, finger: customFingerMappings[char] };
+    }
+
+    // Default behavior for other keys
     for (const row of keyboardRows) {
         for (const key of row) {
             if (key.hindi === char) return { id: key.id, shift: false, finger: key.finger };
@@ -47,7 +69,9 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     }, [lesson.content]);
 
     const [started, setStarted] = useState(false);
+    const [paused, setPaused] = useState(false);
     const [startTime, setStartTime] = useState<number | null>(null);
+    const [pauseTime, setPauseTime] = useState<number | null>(null);
     const [selectedTime, setSelectedTime] = useState<number | null>(null);
     const [timeLeft, setTimeLeft] = useState(0);
     const [completed, setCompleted] = useState(false);
@@ -58,6 +82,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
     const [charIndexInWord, setCharIndexInWord] = useState(0);
     const [wordTypedHistory, setWordTypedHistory] = useState<TypedChar[]>([]);
+    const [incorrectChars, setIncorrectChars] = useState<string[]>([]);
     const [pressedKey, setPressedKey] = useState<string | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -65,7 +90,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     // Timer Logic
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (started && !completed && selectedTime) {
+        if (started && !completed && !paused && selectedTime) {
             interval = setInterval(() => {
                 const now = Date.now();
                 const elapsedSec = (now - (startTime || now)) / 1000;
@@ -87,7 +112,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             }, 1000);
         }
         return () => clearInterval(interval);
-    }, [started, completed, startTime, selectedTime, stats.totalTyped]);
+    }, [started, completed, paused, startTime, selectedTime, stats.totalTyped]);
 
     const getCharFromKey = (code: string, shift: boolean) => {
         if (code === 'Space') return ' ';
@@ -100,7 +125,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     };
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (completed || !selectedTime || !started) return;
+        if (completed || !selectedTime || !started || paused) return;
         if (e.key === 'Backspace') { e.preventDefault(); return; }
         if (['Shift', 'Control', 'Alt', 'CapsLock', 'Tab'].includes(e.key)) return;
 
@@ -121,6 +146,9 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             // Typing characters of the word
             setWordTypedHistory(prev => [...prev, { char: mappedChar, isCorrect }]);
             setCharIndexInWord(prev => prev + 1);
+            if (!isCorrect) {
+                setIncorrectChars(prev => [...prev, mappedChar]);
+            }
             setStats(prev => ({
                 ...prev,
                 totalTyped: prev.totalTyped + 1,
@@ -139,7 +167,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             setStats(prev => ({ ...prev, totalTyped: prev.totalTyped + 1 }));
         }
 
-    }, [currentWordIndex, charIndexInWord, words, completed, started]);
+    }, [currentWordIndex, charIndexInWord, words, completed, started, paused]);
 
     // Active Guidance
     const currentWord = words[currentWordIndex] || '';
@@ -153,6 +181,22 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
         window.addEventListener('click', handleFocus);
         return () => window.removeEventListener('click', handleFocus);
     }, []);
+
+    const handlePauseResume = () => {
+        if (paused) {
+            // Resume: adjust start time to account for pause duration
+            if (pauseTime && startTime) {
+                const pauseDuration = Date.now() - pauseTime;
+                setStartTime(startTime + pauseDuration);
+            }
+            setPaused(false);
+            setPauseTime(null);
+        } else {
+            // Pause: record pause time
+            setPaused(true);
+            setPauseTime(Date.now());
+        }
+    };
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -215,16 +259,38 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                         <span className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Accuracy</span>
                         <span className="text-base font-black text-secondary">{stats.accuracy}%</span>
                     </div>
-                    <button
-                        onClick={() => setShowTimeSelection(true)}
-                        disabled={started}
-                        className="bg-primary hover:bg-primary-dark text-white font-black px-4 py-2 rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 active:scale-95"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-xs">Start Lesson</span>
-                    </button>
+                    {started ? (
+                        <button
+                            onClick={handlePauseResume}
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-black px-4 py-2 rounded-xl shadow-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 active:scale-95"
+                        >
+                            {paused ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-xs">Resume</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-xs">Pause</span>
+                                </>
+                            )}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setShowTimeSelection(true)}
+                            className="bg-primary hover:bg-primary-dark text-white font-black px-4 py-2 rounded-xl shadow-lg transition-all duration-300 flex items-center gap-2 hover:scale-105 active:scale-95"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-xs">Start Lesson</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -280,6 +346,17 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                     <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-30 flex items-center justify-center rounded-[2rem]">
                         <div className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest animate-pulse shadow-2xl">
                             START TYPING THE FIRST WORD TO BEGIN
+                        </div>
+                    </div>
+                )}
+
+                {started && paused && (
+                    <div className="absolute inset-0 bg-orange-500/20 backdrop-blur-sm z-30 flex items-center justify-center rounded-[2rem]">
+                        <div className="bg-orange-500 text-white px-8 py-4 rounded-2xl font-black text-xs tracking-widest animate-pulse shadow-2xl flex items-center gap-3">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            LESSON PAUSED - CLICK RESUME TO CONTINUE
                         </div>
                     </div>
                 )}
@@ -360,19 +437,34 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                                 <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">WPM / CPM</span>
                                 <div className="text-2xl font-black">{stats.wpm} WPM</div>
                             </div>
+                            {incorrectChars.length > 0 && (
+                                <div className="bg-red-50 p-6 rounded-3xl border-2 border-red-200 col-span-3">
+                                    <span className="text-[10px] font-black uppercase text-red-600 block mb-2">गलत अक्षर (Incorrect Characters)</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {incorrectChars.map((char, index) => (
+                                            <span key={index} className="bg-red-100 text-red-800 px-3 py-1 rounded-lg text-lg font-bold border border-red-300">
+                                                {char}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex gap-4">
                             <button
                                 onClick={() => {
                                     setStarted(false);
+                                    setPaused(false);
                                     setStartTime(null);
+                                    setPauseTime(null);
                                     setSelectedTime(null);
                                     setTimeLeft(0);
                                     setCompleted(false);
                                     setCurrentWordIndex(0);
                                     setCharIndexInWord(0);
                                     setWordTypedHistory([]);
+                                    setIncorrectChars([]);
                                     setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
                                 }}
                                 className="flex-1 bg-slate-100 py-4 rounded-2xl font-black"

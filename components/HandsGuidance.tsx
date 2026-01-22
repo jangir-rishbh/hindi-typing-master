@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Image from 'next/image';
 
 interface HandsGuidanceProps {
@@ -8,7 +8,7 @@ interface HandsGuidanceProps {
 }
 
 const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger }) => {
-    const isFingerActive = (fingerId: string) => activeFinger === fingerId;
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // Precisely adjusted positions for chatgpt.png (Realistic Hands)
     const fingerPositions: Record<string, { x: number; y: number }> = {
@@ -24,38 +24,57 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger }) => {
         'r-pinky': { x: 77.5, y: 55 },
     };
 
+
     return (
         <div className="w-full mx-auto select-none pointer-events-none mb-8 group">
             {/* Main Relative Container for Image + Dots */}
-            <div className="relative w-full overflow-hidden rounded-[2rem] shadow-xl border border-slate-100 bg-white" style={{ height: '300px' }}>
+            <div ref={containerRef} className="relative w-full overflow-hidden rounded-[2rem] shadow-xl border border-slate-100 bg-white" style={{ height: '300px' }}>
                 <img
                     src="/images/rishbh jnaigif.png"
                     alt="Realistic Hands"
                     className="w-full h-full object-contain"
                 />
 
-                {/* Finger Dots Overlay */}
+                {/* Invisible Finger Anchor Elements */}
                 {Object.entries(fingerPositions).map(([key, pos]) => (
                     <div
                         key={key}
-                        className={`absolute rounded-full transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 z-30 ${isFingerActive(key)
-                            ? 'bg-primary w-4 h-4 md:w-5 md:h-5 shadow-[0_0_20px_rgba(99,102,241,1)] scale-110'
-                            : 'bg-slate-300 w-1.5 h-1.5 md:w-2 md:h-2 opacity-40'
-                            }`}
+                        data-finger={key}
+                        className="absolute w-0 h-0 pointer-events-none"
+                        style={{
+                            left: `${pos.x}%`,
+                            top: `${pos.y}%`,
+                            transform: 'translate(-50%, -50%)'
+                        }}
+                    />
+                ))}
+
+                {/* Dynamic Guidance Dot */}
+                {activeFinger && (
+                    <div
+                        className="absolute w-5 h-5 md:w-6 md:h-6 bg-primary rounded-full shadow-[0_0_20px_rgba(99,102,241,1)] scale-110 z-30 transition-all duration-300 ease-out transform -translate-x-1/2 -translate-y-1/2"
+                        style={{
+                            left: `${fingerPositions[activeFinger]?.x}%`,
+                            top: `${fingerPositions[activeFinger]?.y}%`
+                        }}
+                    >
+                        <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-40"></div>
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 bg-primary text-white text-[8px] font-bold rounded-full shadow-lg border border-white/20">
+                            {activeFinger.split('-')[1].toUpperCase()}
+                        </div>
+                    </div>
+                )}
+
+                {/* Static Finger Position Indicators (subtle dots) */}
+                {Object.entries(fingerPositions).map(([key, pos]) => (
+                    <div
+                        key={`indicator-${key}`}
+                        className="absolute bg-slate-300 w-1.5 h-1.5 md:w-2 md:h-2 opacity-40 rounded-full transform -translate-x-1/2 -translate-y-1/2 z-20"
                         style={{
                             left: `${pos.x}%`,
                             top: `${pos.y}%`
                         }}
-                    >
-                        {isFingerActive(key) && (
-                            <>
-                                <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-40"></div>
-                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 bg-primary text-white text-[8px] font-bold rounded-full shadow-lg border border-white/20">
-                                    {key.split('-')[1].toUpperCase()}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    />
                 ))}
             </div>
         </div>
