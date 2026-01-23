@@ -4,7 +4,7 @@ import { lessons } from '../data/lessons';
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-stretch justify-center p-0 md:p-0 animate-fade-in">
+    <main className="min-h-screen flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-x-hidden">
       <div className="max-w-7xl w-full bg-tm-panel rounded-none md:rounded-[2rem] overflow-hidden flex flex-col md:flex-row min-h-screen md:min-h-[800px] border border-white/20 shadow-2xl relative z-10">
 
         {/* Sidebar / Info Panel */}

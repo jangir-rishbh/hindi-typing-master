@@ -366,7 +366,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             <div className="mt-2 glass-panel p-4 md:p-6 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-4 w-full">
                 <VisualKeyboard activeKeyId={activeKeyId} pressedKeyId={pressedKey} isShiftRequired={isShiftRequired} activeLessonId={lesson.id} />
                 <div className="w-full">
-                    <HandsGuidance activeFinger={activeFinger} />
+                    <HandsGuidance activeFinger={activeFinger} pressedKeyId={pressedKey} />
                 </div>
             </div>
 

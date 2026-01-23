@@ -12,6 +12,7 @@ const notoSansDevanagari = Noto_Sans_Devanagari({
 export const metadata: Metadata = {
   title: "Hindi Typing Master | InScript Tutor",
   description: "Master Hindi InScript typing with our interactive lessons.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
 export default function RootLayout({
@@ -21,6 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hi" className={`${notoSansDevanagari.variable}`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </head>
       <body className="antialiased min-h-screen font-sans">
         {children}
       </body>
