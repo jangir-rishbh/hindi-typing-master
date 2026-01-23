@@ -22,9 +22,8 @@ interface TypedChar {
 const getKeyDataForChar = (char: string) => {
     // Custom finger mappings for home row keys
     const customFingerMappings: Record<string, string> = {
-        'र': 'l-pinky', // J key (र)
         'े': 'l-ring',  // S key (े)
-        '्': 'l-pinky', // D key (्)
+        '्': 'l-middle', // D key (्) - corrected to middle finger
         'ि': 'l-index', // F key (ि)
         ' ': 'r-thumb'  // Space
     };
@@ -366,7 +365,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             <div className="mt-2 glass-panel p-4 md:p-6 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-4 w-full">
                 <VisualKeyboard activeKeyId={activeKeyId} pressedKeyId={pressedKey} isShiftRequired={isShiftRequired} activeLessonId={lesson.id} />
                 <div className="w-full">
-                    <HandsGuidance activeFinger={activeFinger} pressedKeyId={pressedKey} />
+                    <HandsGuidance activeFinger={activeFinger} pressedKeyId={pressedKey} activeLessonId={lesson.id} />
                 </div>
             </div>
 
