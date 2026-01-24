@@ -16,18 +16,6 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
     activeLessonId = null
 }) => {
 
-    // Helper function to get Hindi character from keyboard layout
-    const getHindiCharacterForKey = (keyLabel: string): string => {
-        for (const row of keyboardRows) {
-            for (const key of row) {
-                if (key.label === keyLabel && key.hindi) {
-                    return key.hindi;
-                }
-            }
-        }
-        return keyLabel; // fallback to original label
-    };
-
     const getKeyStyle = (key: KeyData) => {
         let base = "relative flex flex-col items-center justify-center m-[4px] rounded-2xl transition-all duration-75 select-none group ";
 
@@ -104,7 +92,10 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         <div className="w-full max-w-5xl mx-auto p-4 md:p-6 keyboard-deck rounded-[3.5rem] border border-white/10 shadow-[0_0_80px_-20px_rgba(99,102,241,0.3),inset_0_2px_20px_rgba(255,255,255,0.05)] relative group overflow-hidden">
 
             {/* Dynamic RGB Underglow / Ambient Light */}
-            <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-3/4 h-40 bg-primary/20 blur-[100px] rounded-full opacity-50 animate-pulse-slow"></div>
+            <div className="absolute inset-0 rounded-[3.5rem] opacity-60">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-black/20 to-black/40"></div>
+            </div>
 
             {/* Keyboard Frame Decorative Elements */}
             <div className="absolute top-4 left-10 flex gap-1.5 pointer-events-none opacity-20">
@@ -136,12 +127,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                                     {/* Physical Keycap Top Surface */}
                                     <div className={`absolute inset-0 rounded-2xl transition-opacity ${isPressed ? 'bg-black/10' : 'bg-white/5 opacity-0 group-hover:opacity-100'}`}></div>
 
-                                    {/* Hindi Legend for Finger Guidance */}
-                                    <span className={`absolute top-2 left-3 hindi-legend text-[10px] md:text-[11px] font-bold transition-all ${isTarget || isPressed ? 'scale-110 text-white' : 'text-slate-600'}`}>
-                                        {key.label === 'Control' ? 'CTRL' : getHindiCharacterForKey(key.label)}
-                                    </span>
-
-                                    {/* Center Legend Container */}
+                                    {/* Hindi Characters - Base and Shift */}
                                     <div className="flex flex-col items-center justify-center pt-2 relative z-10">
                                         {/* Shift Component (Upper Legend) */}
                                         {key.shiftHindi && (
@@ -150,15 +136,26 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                                             </span>
                                         )}
 
-                                        {/* Main Component */}
+                                        {/* Main Component - Base Character */}
                                         {key.hindi && (
                                             <span className={`text-2xl md:text-3xl font-bold hindi-text -mt-1 transition-all ${isTarget || isPressed ? 'text-white scale-110' : (isShiftRequired ? 'opacity-20 translate-y-1' : 'text-slate-800')}`}>
                                                 {key.hindi}
                                             </span>
                                         )}
 
-                                        {!key.hindi && key.width && (
-                                            <span className="text-[10px] md:text-[11px] font-black uppercase opacity-40 tracking-[.25em]">{key.id === 'Space' ? 'SPACE' : ''}</span>
+                                        {/* Special Keys - Show label if no Hindi character */}
+                                        {!key.hindi && (
+                                            <span className="text-[10px] md:text-[11px] font-black uppercase opacity-60 tracking-[.25em]">
+                                                {key.id === 'Space' ? 'SPACE' : 
+                                                 key.id === 'CapsLock' ? 'CAPS' :
+                                                 key.id === 'ShiftLeft' || key.id === 'ShiftRight' ? 'SHIFT' :
+                                                 key.id === 'ControlLeft' || key.id === 'ControlRight' ? 'CTRL' :
+                                                 key.id === 'AltLeft' || key.id === 'AltRight' ? 'ALT' :
+                                                 key.id === 'Enter' ? 'ENTER' :
+                                                 key.id === 'Backspace' ? 'BACKSPACE' :
+                                                 key.id === 'Tab' ? 'TAB' :
+                                                 key.label}
+                                            </span>
                                         )}
                                     </div>
 
