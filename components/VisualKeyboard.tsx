@@ -33,6 +33,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const isTarget = key.id === activeKeyId;
         const isPressed = key.id === pressedKeyId;
         const isShift = key.id === 'ShiftLeft' || key.id === 'ShiftRight';
+        const isSpecialKey = ['Space', 'ShiftLeft', 'ShiftRight', 'Enter', 'Tab', 'CapsLock', 'Backspace', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight'].includes(key.id);
 
         // Check if key belongs to current lesson
         const isLessonKey = lessonKeys.includes(key.id);
@@ -53,7 +54,10 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
 
         // Style keys based on lesson membership
         let colorStyle = "";
-        if (isLessonKey) {
+        if (isSpecialKey) {
+            // Special keys get unique highlighting
+            colorStyle = "bg-gradient-to-br from-amber-100/80 to-orange-100/80 border-2 border-amber-400/60 shadow-[inset_0_-4px_0_rgba(251,191,36,0.2),0_6px_20px_rgba(251,191,36,0.3)] hover:from-amber-200/80 hover:to-orange-200/80 hover:border-amber-500/60 hover:scale-105";
+        } else if (isLessonKey) {
             // Active lesson keys get highlighted with finger colors
             if (key.finger && fingerStyles[key.finger]) {
                 colorStyle = fingerStyles[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
@@ -132,28 +136,25 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                                     <div className="flex flex-col items-center justify-center pt-2 relative z-10">
                                         {/* Shift Component (Upper Legend) */}
                                         {key.shiftHindi && (
-                                            <span className={`text-[13px] md:text-[14px] hindi-text font-bold transition-all transform ${isTarget || isPressed ? 'text-white' : (isShiftRequired ? 'text-primary scale-110 opacity-100' : 'text-slate-600 opacity-80')}`}>
+                                            <span className={`text-[14px] md:text-[15px] hindi-text font-black transition-all transform ${isTarget || isPressed ? 'text-white drop-shadow-lg' : (isShiftRequired ? 'text-cyan-400 scale-110 drop-shadow-md' : 'text-white drop-shadow-sm')}`}>
                                                 {key.shiftHindi}
                                             </span>
                                         )}
 
                                         {/* Main Component - Base Character */}
-                                        {key.hindi && (
-                                            <span className={`text-2xl md:text-3xl font-bold hindi-text -mt-1 transition-all ${isTarget || isPressed ? 'text-white scale-110' : (isShiftRequired ? 'opacity-20 translate-y-1' : 'text-slate-800')}`}>
+                                        {key.hindi ? (
+                                            <span className={`text-3xl md:text-4xl font-black hindi-text -mt-1 transition-all ${isTarget || isPressed ? 'text-white drop-shadow-lg' : (isShiftRequired ? 'opacity-30 translate-y-1' : 'text-white drop-shadow-md')}`}>
                                                 {key.hindi}
                                             </span>
-                                        )}
-
-                                        {/* Special Keys - Show label if no Hindi character */}
-                                        {!key.hindi && (
-                                            <span className="text-[10px] md:text-[11px] font-black uppercase opacity-60 tracking-[.25em]">
+                                        ) : (
+                                            <span className="text-[12px] md:text-[13px] font-black uppercase text-white drop-shadow-md tracking-wider">
                                                 {key.id === 'Space' ? 'SPACE' : 
                                                  key.id === 'CapsLock' ? 'CAPS' :
                                                  key.id === 'ShiftLeft' || key.id === 'ShiftRight' ? 'SHIFT' :
                                                  key.id === 'ControlLeft' || key.id === 'ControlRight' ? 'CTRL' :
                                                  key.id === 'AltLeft' || key.id === 'AltRight' ? 'ALT' :
                                                  key.id === 'Enter' ? 'ENTER' :
-                                                 key.id === 'Backspace' ? 'BACKSPACE' :
+                                                 key.id === 'Backspace' ? 'BACK' :
                                                  key.id === 'Tab' ? 'TAB' :
                                                  key.label}
                                             </span>
