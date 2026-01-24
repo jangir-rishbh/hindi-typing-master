@@ -6,10 +6,11 @@ import { keyboardRows, KeyData } from '../data/keyboardLayout';
 interface HandsGuidanceProps {
     activeFinger?: string | null; // e.g., 'l-pinky', 'r-index'
     pressedKeyId?: string | null; // The key that was just pressed
-    activeLessonId?: number | null; // Current lesson ID (1=home, 2=upper, 3=lower)
+    activeLessonId?: number | null; // Current lesson ID
+    lessonKeys?: string[]; // Keys for current lesson
 }
 
-const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyId, activeLessonId }) => {
+const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyId, activeLessonId, lessonKeys = [] }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [pressedFinger, setPressedFinger] = useState<string | null>(null);
 
@@ -42,64 +43,45 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
         return null;
     };
 
-    // Finger color mappings for different lessons
-    const getFingerColorsForLesson = (lessonId: number | null) => {
-        switch (lessonId) {
-            case 1: // Home Row - ASDF GH JKL; + Space
-                return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['A'], description: getHindiCharacterForKey('A') },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['S'], description: getHindiCharacterForKey('S') },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['D'], description: getHindiCharacterForKey('D') },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['F', 'G'], description: getHindiCharactersForKeys(['F', 'G']) },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['H', 'J'], description: getHindiCharactersForKeys(['H', 'J']) },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['K'], description: getHindiCharacterForKey('K') },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['L'], description: getHindiCharacterForKey('L') },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [';'], description: getHindiCharacterForKey(';') },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
-                };
+    // Generate finger colors dynamically based on lesson keys
+    const getFingerColorsForLesson = (lessonKeys: string[]) => {
+        const fingerMap: Record<string, { color: string, textColor: string, name: string, keys: string[], description: string }> = {
+            'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: [], description: '' },
+            'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: [], description: '' },
+            'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: [], description: '' },
+            'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: [], description: '' },
+            'l-thumb': { color: 'bg-purple-400', textColor: 'text-purple-600', name: 'Left Thumb', keys: [], description: '' },
+            'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: [], description: '' },
+            'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: [], description: '' },
+            'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: [], description: '' },
+            'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: [], description: '' },
+            'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [], description: '' },
+        };
 
-            case 2: // Upper Row + Space
-                return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['Q'], description: getHindiCharacterForKey('Q') },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['W'], description: getHindiCharacterForKey('W') },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['E'], description: getHindiCharacterForKey('E') },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['R', 'T'], description: getHindiCharactersForKeys(['R', 'T']) },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['Y', 'U'], description: getHindiCharactersForKeys(['Y', 'U']) },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['I'], description: getHindiCharacterForKey('I') },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['O'], description: getHindiCharacterForKey('O') },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: ['P'], description: getHindiCharacterForKey('P') },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
-                };
-
-            case 3: // Lower Row + Space
-                return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['Z'], description: getHindiCharacterForKey('Z') },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['X'], description: getHindiCharacterForKey('X') },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['C'], description: getHindiCharacterForKey('C') },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['V', 'B'], description: getHindiCharactersForKeys(['V', 'B']) },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['N', 'M'], description: getHindiCharactersForKeys(['N', 'M']) },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: [','], description: getHindiCharacterForKey(',') },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['.'], description: getHindiCharacterForKey('.') },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: ['/'], description: getHindiCharacterForKey('/') },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
-                };
-
-            default: // Default to home row - ASDF GH JKL; + Space
-                return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['A'], description: getHindiCharacterForKey('A') },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['S'], description: getHindiCharacterForKey('S') },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['D'], description: getHindiCharacterForKey('D') },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['F', 'G'], description: getHindiCharactersForKeys(['F', 'G']) },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['H', 'J'], description: getHindiCharactersForKeys(['H', 'J']) },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['K'], description: getHindiCharacterForKey('K') },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['L'], description: getHindiCharacterForKey('L') },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [';'], description: getHindiCharacterForKey(';') },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
-                };
+        // Group lesson keys by finger
+        for (const keyId of lessonKeys) {
+            for (const row of keyboardRows) {
+                for (const key of row) {
+                    if (key.id === keyId && key.finger && fingerMap[key.finger]) {
+                        fingerMap[key.finger].keys.push(key.label);
+                        fingerMap[key.finger].description = fingerMap[key.finger].keys.length > 1 
+                            ? getHindiCharactersForKeys(fingerMap[key.finger].keys)
+                            : getHindiCharacterForKey(key.label);
+                    }
+                }
+            }
         }
+
+        // Always include space for right thumb
+        if (!fingerMap['r-thumb'].keys.includes('Space')) {
+            fingerMap['r-thumb'].keys.push('Space');
+            fingerMap['r-thumb'].description = 'Space';
+        }
+
+        return fingerMap;
     };
 
-    const fingerColors = getFingerColorsForLesson(activeLessonId || null);
+    const fingerColors = getFingerColorsForLesson(lessonKeys);
 
     // Get lesson info
     const getLessonInfo = (lessonId: number | null) => {

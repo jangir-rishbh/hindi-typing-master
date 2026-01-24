@@ -6,14 +6,18 @@ interface VisualKeyboardProps {
     activeKeyId?: string | null;     // The key the user SHOULD press
     pressedKeyId?: string | null;    // The key the user JUST pressed
     isShiftRequired?: boolean;       // If true, highlight Shift keys
-    activeLessonId?: number | null;  // New: Current lesson ID for highlighting rows
+    activeLessonId?: number | null;  // Current lesson ID for highlighting
+    lessonKeys?: string[];           // Keys for current lesson
+    isWrongKey?: boolean;            // If the pressed key is wrong
 }
 
 const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
     activeKeyId,
     pressedKeyId,
     isShiftRequired = false,
-    activeLessonId = null
+    activeLessonId = null,
+    lessonKeys = [],
+    isWrongKey = false
 }) => {
 
     const getKeyStyle = (key: KeyData) => {
@@ -30,22 +34,10 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         const isPressed = key.id === pressedKeyId;
         const isShift = key.id === 'ShiftLeft' || key.id === 'ShiftRight';
 
-        // Define key sets for different lessons
-        const homeRowKeys = ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Space'];
-        const upperRowKeys = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash', 'Space'];
-        const lowerRowKeys = ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash', 'Space'];
-
-        let isLessonKey = false;
-        if (activeLessonId === 1) {
-            isLessonKey = homeRowKeys.includes(key.id);
-        } else if (activeLessonId === 2) {
-            isLessonKey = upperRowKeys.includes(key.id);
-        } else if (activeLessonId === 3) {
-            isLessonKey = lowerRowKeys.includes(key.id);
-        }
+        // Check if key belongs to current lesson
+        const isLessonKey = lessonKeys.includes(key.id);
 
         // Premium Tactile Palettes
-
         const fingerStyles: Record<string, string> = {
             'l-pinky': "bg-rose-50/50 border-rose-200 text-rose-700",
             'l-ring': "bg-orange-50/50 border-orange-200 text-orange-700",
@@ -59,13 +51,18 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
             'r-pinky': "bg-rose-50/50 border-rose-200 text-rose-700",
         };
 
-        const defaultStyle = "bg-white/80 border-slate-200 text-slate-700 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
-        let colorStyle = defaultStyle;
-
+        // Style keys based on lesson membership
+        let colorStyle = "";
         if (isLessonKey) {
-            colorStyle = "bg-yellow-100 border-yellow-300 text-yellow-800 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
-        } else if (key.finger && fingerStyles[key.finger]) {
-            colorStyle = fingerStyles[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
+            // Active lesson keys get highlighted with finger colors
+            if (key.finger && fingerStyles[key.finger]) {
+                colorStyle = fingerStyles[key.finger] + " border shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
+            } else {
+                colorStyle = "bg-yellow-100 border-yellow-300 text-yellow-800 shadow-[inset_0_-4px_0_rgba(0,0,0,0.05),0_4px_10px_rgba(0,0,0,0.03)]";
+            }
+        } else {
+            // Non-lesson keys appear disabled/dimmed
+            colorStyle = "bg-slate-50/30 border-slate-200/30 text-slate-400/50 shadow-none opacity-40";
         }
 
         // Active Target State
@@ -75,6 +72,10 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
 
         // Physical Animated Press Effect
         if (isPressed) {
+            // Show red color for wrong key press
+            if (isWrongKey) {
+                return base + "bg-red-500 border-red-600 text-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_10px_20px_rgba(239,68,68,0.4)] translate-y-1 scale-[0.97] z-20 animate-pulse";
+            }
             const pressStyle = isTarget ? "bg-primary" : (isShift && isShiftRequired ? "bg-secondary" : "bg-accent");
             return base + pressStyle + " text-white border-transparent shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] translate-y-1 scale-[0.97] z-20";
         }

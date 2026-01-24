@@ -83,6 +83,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     const [wordTypedHistory, setWordTypedHistory] = useState<TypedChar[]>([]);
     const [incorrectChars, setIncorrectChars] = useState<string[]>([]);
     const [pressedKey, setPressedKey] = useState<string | null>(null);
+    const [isWrongKey, setIsWrongKey] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -131,14 +132,21 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
         const mappedChar = getCharFromKey(e.code, e.shiftKey);
         if (!mappedChar) return;
 
-        // Visual feedback
-        setPressedKey(e.code);
-        setTimeout(() => setPressedKey(null), 150);
-
         const currentWord = words[currentWordIndex];
         const targetChar = charIndexInWord < currentWord.length ? currentWord[charIndexInWord] : ' ';
-
         const isCorrect = mappedChar === targetChar;
+
+        // Visual feedback
+        setPressedKey(e.code);
+        
+        // Check if this is a wrong key press
+        const isWrongKeyPressed = !isCorrect && mappedChar !== ' ';
+        setIsWrongKey(isWrongKeyPressed);
+        
+        setTimeout(() => {
+            setPressedKey(null);
+            setIsWrongKey(false);
+        }, 150);
 
         // Validation & Progress
         if (charIndexInWord < currentWord.length) {
@@ -363,9 +371,21 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
 
             {/* Keyboard Guidance (Full Width) */}
             <div className="mt-2 glass-panel p-4 md:p-6 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-4 w-full">
-                <VisualKeyboard activeKeyId={activeKeyId} pressedKeyId={pressedKey} isShiftRequired={isShiftRequired} activeLessonId={lesson.id} />
+                <VisualKeyboard 
+                    activeKeyId={activeKeyId} 
+                    pressedKeyId={pressedKey} 
+                    isShiftRequired={isShiftRequired} 
+                    activeLessonId={lesson.id} 
+                    lessonKeys={lesson.keys}
+                    isWrongKey={isWrongKey}
+                />
                 <div className="w-full">
-                    <HandsGuidance activeFinger={activeFinger} pressedKeyId={pressedKey} activeLessonId={lesson.id} />
+                    <HandsGuidance 
+                        activeFinger={activeFinger} 
+                        pressedKeyId={pressedKey} 
+                        activeLessonId={lesson.id} 
+                        lessonKeys={lesson.keys} 
+                    />
                 </div>
             </div>
 

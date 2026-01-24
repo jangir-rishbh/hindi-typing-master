@@ -1,8 +1,25 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { lessons } from '../data/lessons';
 
 export default function Home() {
+  const [currentLessonId, setCurrentLessonId] = useState(1);
+  const currentLesson = lessons.find(lesson => lesson.id === currentLessonId);
+  const totalLessons = lessons.length;
+
+  const handleNextLesson = () => {
+    if (currentLessonId < totalLessons) {
+      setCurrentLessonId(currentLessonId + 1);
+    }
+  };
+
+  const handlePrevLesson = () => {
+    if (currentLessonId > 1) {
+      setCurrentLessonId(currentLessonId - 1);
+    }
+  };
   return (
     <main className="min-h-screen flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-x-hidden">
       <div className="max-w-7xl w-full bg-tm-panel rounded-none md:rounded-[2rem] overflow-hidden flex flex-col md:flex-row min-h-screen md:min-h-[800px] border border-white/20 shadow-2xl relative z-10">
@@ -68,47 +85,91 @@ export default function Home() {
           </div>
 
           <div className="relative z-10 pt-10">
-            <Link href="/lesson/1" className="block w-full">
+            <Link href={`/lesson/${currentLessonId}`} className="block w-full">
               <button className="w-full bg-primary text-white hover:bg-primary-dark font-black py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.2)] transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
-                <span className="text-base">Get Started</span>
+                <span className="text-base">Start Lesson {currentLessonId}</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </Link>
           </div>
         </div>
 
-        {/* Lesson List */}
+        {/* Single Lesson Display */}
         <div className="w-full md:w-[65%] p-6 md:p-10 overflow-y-auto custom-scrollbar bg-tm-bg">
           <div className="flex justify-between items-end mb-8">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Learning Path</h2>
-              <p className="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold">Master the InScript layout step-by-step</p>
+              <h2 className="text-2xl font-black text-slate-900">Current Lesson</h2>
+              <p className="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold">Lesson {currentLessonId} of {totalLessons}</p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-slate-400 uppercase tracking-tighter">Course</span>
+              <span className="text-2xl font-black text-slate-400 uppercase tracking-tighter">{currentLessonId.toString().padStart(2, '0')}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {lessons.map((lesson, idx) => (
-              <Link href={`/lesson/${lesson.id}`} key={lesson.id} className="block group animate-slide-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                <div className="flex items-center p-5 bg-white rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer border border-slate-200 hover:-translate-y-0.5">
-                  <div className="h-12 w-12 flex items-center justify-center bg-primary text-white font-black text-lg rounded-xl mr-5 group-hover:bg-primary-dark transition-all duration-300 shadow-md">
-                    {lesson.id.toString().padStart(2, '0')}
+          {currentLesson && (
+            <div className="animate-slide-up">
+              <Link href={`/lesson/${currentLesson.id}`} className="block group">
+                <div className="flex items-center p-8 bg-white rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer border border-slate-200 hover:-translate-y-0.5">
+                  <div className="h-16 w-16 flex items-center justify-center bg-primary text-white font-black text-2xl rounded-xl mr-6 group-hover:bg-primary-dark transition-all duration-300 shadow-md">
+                    {currentLesson.id.toString().padStart(2, '0')}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-base font-black text-slate-800 group-hover:text-primary transition-colors">{lesson.title}</h3>
-                    <p className="text-sm text-slate-500 font-medium opacity-80">{lesson.description}</p>
+                    <h3 className="text-xl font-black text-slate-800 group-hover:text-primary transition-colors">{currentLesson.title}</h3>
+                    <p className="text-base text-slate-500 font-medium opacity-80 mt-2">{currentLesson.description}</p>
                   </div>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 border border-slate-200 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                    <span className="text-slate-400 group-hover:text-primary transition-colors">→</span>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 border border-slate-200 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                    <span className="text-slate-400 group-hover:text-primary transition-colors text-xl">→</span>
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-200 text-center text-slate-500">
+              {/* Navigation Buttons */}
+              <div className="flex justify-between items-center mt-8 gap-4">
+                <button
+                  onClick={handlePrevLesson}
+                  disabled={currentLessonId === 1}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all duration-300 ${
+                    currentLessonId === 1
+                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:-translate-y-0.5 active:scale-[0.98]'
+                  }`}
+                >
+                  <span className="text-lg">←</span>
+                  <span>Previous</span>
+                </button>
+
+                <div className="flex gap-2">
+                  {Array.from({ length: totalLessons }, (_, i) => i + 1).map((lessonNum) => (
+                    <button
+                      key={lessonNum}
+                      onClick={() => setCurrentLessonId(lessonNum)}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        lessonNum === currentLessonId
+                          ? 'bg-primary w-8'
+                          : 'bg-slate-300 hover:bg-slate-400'
+                      }`}
+                      aria-label={`Go to lesson ${lessonNum}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleNextLesson}
+                  disabled={currentLessonId === totalLessons}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all duration-300 ${
+                    currentLessonId === totalLessons
+                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-primary-dark hover:-translate-y-0.5 active:scale-[0.98] shadow-md'
+                  }`}
+                >
+                  <span>Next</span>
+                  <span className="text-lg">→</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500">
             <div className="flex items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 transition-all">
               <div className="text-[9px] font-bold uppercase tracking-widest text-slate-600 italic">InScript Unicode Enabled</div>
               <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
