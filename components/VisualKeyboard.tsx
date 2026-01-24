@@ -16,6 +16,18 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
     activeLessonId = null
 }) => {
 
+    // Helper function to get Hindi character from keyboard layout
+    const getHindiCharacterForKey = (keyLabel: string): string => {
+        for (const row of keyboardRows) {
+            for (const key of row) {
+                if (key.label === keyLabel && key.hindi) {
+                    return key.hindi;
+                }
+            }
+        }
+        return keyLabel; // fallback to original label
+    };
+
     const getKeyStyle = (key: KeyData) => {
         let base = "relative flex flex-col items-center justify-center m-[4px] rounded-2xl transition-all duration-75 select-none group ";
 
@@ -124,9 +136,9 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                                     {/* Physical Keycap Top Surface */}
                                     <div className={`absolute inset-0 rounded-2xl transition-opacity ${isPressed ? 'bg-black/10' : 'bg-white/5 opacity-0 group-hover:opacity-100'}`}></div>
 
-                                    {/* English Legend (Clearly Visible) */}
-                                    <span className={`absolute top-2 left-3 english-legend transition-all ${isTarget || isPressed ? 'scale-110' : ''}`}>
-                                        {key.label === 'Control' ? 'CTRL' : key.label.toLowerCase()}
+                                    {/* Hindi Legend for Finger Guidance */}
+                                    <span className={`absolute top-2 left-3 hindi-legend text-[10px] md:text-[11px] font-bold transition-all ${isTarget || isPressed ? 'scale-110 text-white' : 'text-slate-600'}`}>
+                                        {key.label === 'Control' ? 'CTRL' : getHindiCharacterForKey(key.label)}
                                     </span>
 
                                     {/* Center Legend Container */}

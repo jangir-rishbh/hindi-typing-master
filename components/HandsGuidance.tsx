@@ -13,6 +13,23 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
     const containerRef = useRef<HTMLDivElement>(null);
     const [pressedFinger, setPressedFinger] = useState<string | null>(null);
 
+    // Helper function to get Hindi character from keyboard layout
+    const getHindiCharacterForKey = (keyLabel: string): string => {
+        for (const row of keyboardRows) {
+            for (const key of row) {
+                if (key.label === keyLabel && key.hindi) {
+                    return key.hindi;
+                }
+            }
+        }
+        return keyLabel; // fallback to original label
+    };
+
+    // Helper function to get Hindi characters for multiple keys
+    const getHindiCharactersForKeys = (keyLabels: string[]): string => {
+        return keyLabels.map(label => getHindiCharacterForKey(label)).join(', ');
+    };
+
     // Get finger for pressed key
     const getFingerForKey = (keyId: string): string | null => {
         for (const row of keyboardRows) {
@@ -30,54 +47,54 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
         switch (lessonId) {
             case 1: // Home Row - ASDF GH JKL; + Space
                 return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['A'], description: 'A key' },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['S'], description: 'S key' },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['D'], description: 'D key' },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['F', 'G'], description: 'F, G keys' },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['H', 'J'], description: 'H, J keys' },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['K'], description: 'K key' },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['L'], description: 'L key' },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [';'], description: '; key' },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space key' }
+                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['A'], description: getHindiCharacterForKey('A') },
+                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['S'], description: getHindiCharacterForKey('S') },
+                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['D'], description: getHindiCharacterForKey('D') },
+                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['F', 'G'], description: getHindiCharactersForKeys(['F', 'G']) },
+                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['H', 'J'], description: getHindiCharactersForKeys(['H', 'J']) },
+                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['K'], description: getHindiCharacterForKey('K') },
+                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['L'], description: getHindiCharacterForKey('L') },
+                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [';'], description: getHindiCharacterForKey(';') },
+                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
                 };
 
             case 2: // Upper Row + Space
                 return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['Q'], description: 'Q key' },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['W'], description: 'W key' },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['E'], description: 'E key' },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['R', 'T'], description: 'R, T keys' },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['Y', 'U'], description: 'Y, U keys' },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['I'], description: 'I key' },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['O'], description: 'O key' },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: ['P'], description: 'P key' },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space key' }
+                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['Q'], description: getHindiCharacterForKey('Q') },
+                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['W'], description: getHindiCharacterForKey('W') },
+                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['E'], description: getHindiCharacterForKey('E') },
+                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['R', 'T'], description: getHindiCharactersForKeys(['R', 'T']) },
+                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['Y', 'U'], description: getHindiCharactersForKeys(['Y', 'U']) },
+                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['I'], description: getHindiCharacterForKey('I') },
+                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['O'], description: getHindiCharacterForKey('O') },
+                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: ['P'], description: getHindiCharacterForKey('P') },
+                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
                 };
 
             case 3: // Lower Row + Space
                 return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['Z'], description: 'Z key' },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['X'], description: 'X key' },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['C'], description: 'C key' },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['V', 'B'], description: 'V, B keys' },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['N', 'M'], description: 'N, M keys' },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: [','], description: ', key' },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['.'], description: '. key' },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: ['/'], description: '/ key' },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space key' }
+                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['Z'], description: getHindiCharacterForKey('Z') },
+                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['X'], description: getHindiCharacterForKey('X') },
+                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['C'], description: getHindiCharacterForKey('C') },
+                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['V', 'B'], description: getHindiCharactersForKeys(['V', 'B']) },
+                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['N', 'M'], description: getHindiCharactersForKeys(['N', 'M']) },
+                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: [','], description: getHindiCharacterForKey(',') },
+                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['.'], description: getHindiCharacterForKey('.') },
+                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: ['/'], description: getHindiCharacterForKey('/') },
+                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
                 };
 
             default: // Default to home row - ASDF GH JKL; + Space
                 return {
-                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['A'], description: 'A key' },
-                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['S'], description: 'S key' },
-                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['D'], description: 'D key' },
-                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['F', 'G'], description: 'F, G keys' },
-                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['H', 'J'], description: 'H, J keys' },
-                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['K'], description: 'K key' },
-                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['L'], description: 'L key' },
-                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [';'], description: '; key' },
-                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space key' }
+                    'l-pinky': { color: 'bg-pink-400', textColor: 'text-pink-600', name: 'Left Pinky', keys: ['A'], description: getHindiCharacterForKey('A') },
+                    'l-ring': { color: 'bg-blue-400', textColor: 'text-blue-600', name: 'Left Ring', keys: ['S'], description: getHindiCharacterForKey('S') },
+                    'l-middle': { color: 'bg-yellow-400', textColor: 'text-yellow-600', name: 'Left Middle', keys: ['D'], description: getHindiCharacterForKey('D') },
+                    'l-index': { color: 'bg-green-400', textColor: 'text-green-600', name: 'Left Index', keys: ['F', 'G'], description: getHindiCharactersForKeys(['F', 'G']) },
+                    'r-index': { color: 'bg-green-500', textColor: 'text-green-600', name: 'Right Index', keys: ['H', 'J'], description: getHindiCharactersForKeys(['H', 'J']) },
+                    'r-middle': { color: 'bg-yellow-500', textColor: 'text-yellow-600', name: 'Right Middle', keys: ['K'], description: getHindiCharacterForKey('K') },
+                    'r-ring': { color: 'bg-blue-500', textColor: 'text-blue-600', name: 'Right Ring', keys: ['L'], description: getHindiCharacterForKey('L') },
+                    'r-pinky': { color: 'bg-pink-500', textColor: 'text-pink-600', name: 'Right Pinky', keys: [';'], description: getHindiCharacterForKey(';') },
+                    'r-thumb': { color: 'bg-orange-500', textColor: 'text-orange-600', name: 'Right Thumb', keys: ['Space'], description: 'Space' }
                 };
         }
     };
@@ -101,50 +118,50 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
         switch (lessonId) {
             case 1: // Home Row - ASDF GH JKL; + Space
                 return [
-                    { color: 'bg-pink-400', label: 'A = Left Pinky' },
-                    { color: 'bg-blue-400', label: 'S = Left Ring' },
-                    { color: 'bg-yellow-400', label: 'D = Left Middle' },
-                    { color: 'bg-green-400', label: 'F, G = Left Index' },
-                    { color: 'bg-green-500', label: 'H, J = Right Index' },
-                    { color: 'bg-yellow-500', label: 'K = Right Middle' },
-                    { color: 'bg-blue-500', label: 'L = Right Ring' },
-                    { color: 'bg-pink-500', label: '; = Right Pinky' },
+                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('A')} = Left Pinky` },
+                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('S')} = Left Ring` },
+                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('D')} = Left Middle` },
+                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['F', 'G'])} = Left Index` },
+                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['H', 'J'])} = Right Index` },
+                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey('K')} = Right Middle` },
+                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('L')} = Right Ring` },
+                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey(';')} = Right Pinky` },
                     { color: 'bg-orange-500', label: 'Space = Right Thumb' }
                 ];
             case 2: // Upper Row + Space
                 return [
-                    { color: 'bg-pink-400', label: 'Q = Left Pinky' },
-                    { color: 'bg-blue-400', label: 'W = Left Ring' },
-                    { color: 'bg-yellow-400', label: 'E = Left Middle' },
-                    { color: 'bg-green-400', label: 'R, T = Left Index' },
-                    { color: 'bg-green-500', label: 'Y, U = Right Index' },
-                    { color: 'bg-yellow-500', label: 'I = Right Middle' },
-                    { color: 'bg-blue-500', label: 'O = Right Ring' },
-                    { color: 'bg-pink-500', label: 'P = Right Pinky' },
+                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('Q')} = Left Pinky` },
+                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('W')} = Left Ring` },
+                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('E')} = Left Middle` },
+                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['R', 'T'])} = Left Index` },
+                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['Y', 'U'])} = Right Index` },
+                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey('I')} = Right Middle` },
+                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('O')} = Right Ring` },
+                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey('P')} = Right Pinky` },
                     { color: 'bg-orange-500', label: 'Space = Right Thumb' }
                 ];
             case 3: // Lower Row + Space
                 return [
-                    { color: 'bg-pink-400', label: 'Z = Left Pinky' },
-                    { color: 'bg-blue-400', label: 'X = Left Ring' },
-                    { color: 'bg-yellow-400', label: 'C = Left Middle' },
-                    { color: 'bg-green-400', label: 'V, B = Left Index' },
-                    { color: 'bg-green-500', label: 'N, M = Right Index' },
-                    { color: 'bg-yellow-500', label: ', = Right Middle' },
-                    { color: 'bg-blue-500', label: '. = Right Ring' },
-                    { color: 'bg-pink-500', label: '/ = Right Pinky' },
+                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('Z')} = Left Pinky` },
+                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('X')} = Left Ring` },
+                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('C')} = Left Middle` },
+                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['V', 'B'])} = Left Index` },
+                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['N', 'M'])} = Right Index` },
+                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey(',')} = Right Middle` },
+                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('.')} = Right Ring` },
+                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey('/')} = Right Pinky` },
                     { color: 'bg-orange-500', label: 'Space = Right Thumb' }
                 ];
             default: // Default to home row - ASDF GH JKL; + Space
                 return [
-                    { color: 'bg-pink-400', label: 'A = Left Pinky' },
-                    { color: 'bg-blue-400', label: 'S = Left Ring' },
-                    { color: 'bg-yellow-400', label: 'D = Left Middle' },
-                    { color: 'bg-green-400', label: 'F, G = Left Index' },
-                    { color: 'bg-green-500', label: 'H, J = Right Index' },
-                    { color: 'bg-yellow-500', label: 'K = Right Middle' },
-                    { color: 'bg-blue-500', label: 'L = Right Ring' },
-                    { color: 'bg-pink-500', label: '; = Right Pinky' },
+                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('A')} = Left Pinky` },
+                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('S')} = Left Ring` },
+                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('D')} = Left Middle` },
+                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['F', 'G'])} = Left Index` },
+                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['H', 'J'])} = Right Index` },
+                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey('K')} = Right Middle` },
+                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('L')} = Right Ring` },
+                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey(';')} = Right Pinky` },
                     { color: 'bg-orange-500', label: 'Space = Right Thumb' }
                 ];
         }
