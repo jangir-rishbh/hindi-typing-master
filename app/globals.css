@@ -40,10 +40,10 @@ html, body {
 
 /* Global transform-based scale fix */
 html {
-  transform: scale(0.8);
+  transform: scale(0.7);
   transform-origin: 0 0;
-  width: 125%; /* 100 / 0.8 */
-  height: 125%; /* 100 / 0.8 */
+  width: 143%; /* 100 / 0.7 */
+  height: 143%; /* 100 / 0.7 */
 }
 
 body {
