@@ -236,9 +236,9 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     };
 
     return (
-        <div className="flex flex-col min-h-screen w-full outline-none animate-fade-in" onKeyDown={handleKeyDown} tabIndex={0}>
+        <div className="flex flex-col h-full w-full outline-none animate-fade-in" onKeyDown={handleKeyDown} tabIndex={0}>
             {/* Stats Header (Flushed to Top) */}
-            <div className="glass-panel p-4 rounded-none border-x-0 border-t-0 border-white/20 shadow-lg flex flex-wrap justify-between items-center gap-4 w-full">
+            <div className="glass-panel p-1 rounded-none border-x-0 border-t-0 border-white/20 shadow-lg flex flex-wrap justify-between items-center gap-2 w-full flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-900 rounded-xl shadow-md border border-white/10">
                         <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
@@ -302,7 +302,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             </div>
 
             {/* Word Display Area (Compact) */}
-            <div className="glass-panel p-4 md:p-6 rounded-[1.5rem] shadow-xl border-white/30 flex flex-col items-center gap-4 relative overflow-hidden min-h-[180px] justify-center">
+            <div className="glass-panel p-2 md:p-3 rounded-[1rem] shadow-xl border-white/30 flex flex-col items-center gap-2 relative overflow-hidden min-h-[100px] justify-center flex-shrink-0">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
 
                 <div className="flex flex-wrap justify-center gap-6 relative z-10">
@@ -370,7 +370,7 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             </div>
 
             {/* Keyboard Guidance (Full Width) */}
-            <div className="mt-2 glass-panel p-4 md:p-6 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-4 w-full">
+            <div className="glass-panel p-2 md:p-3 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-2 w-full flex-shrink-0">
                 <VisualKeyboard 
                     activeKeyId={activeKeyId} 
                     pressedKeyId={pressedKey} 

@@ -27,7 +27,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
         if (key.width) {
             base += key.width + " ";
         } else {
-            base += "flex-1 h-12 md:h-14 ";
+            base += "flex-1 h-10 md:h-12 ";
         }
 
         const isTarget = key.id === activeKeyId;
@@ -94,7 +94,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
 
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 md:p-6 keyboard-deck rounded-[3.5rem] border border-white/10 shadow-[0_0_80px_-20px_rgba(99,102,241,0.3),inset_0_2px_20px_rgba(255,255,255,0.05)] relative group overflow-hidden">
+        <div className="w-full max-w-5xl mx-auto p-1 md:p-2 keyboard-deck rounded-[1rem] border border-white/10 shadow-[0_0_50px_-10px_rgba(99,102,241,0.3),inset_0_2px_10px_rgba(255,255,255,0.05)] relative group overflow-hidden">
 
             {/* Dynamic RGB Underglow / Ambient Light */}
             <div className="absolute inset-0 rounded-[3.5rem] opacity-60">
@@ -116,7 +116,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2 relative z-10 pt-8">
+            <div className="flex flex-col gap-1 relative z-10 pt-4">
                 {keyboardRows.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex w-full justify-center">
                         {row.map((key) => {
