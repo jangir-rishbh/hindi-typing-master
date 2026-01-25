@@ -124,6 +124,34 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
         return null;
     };
 
+    // Audio feedback setup
+    const [correctSound, setCorrectSound] = useState<HTMLAudioElement | null>(null);
+    const [wrongSound, setWrongSound] = useState<HTMLAudioElement | null>(null);
+    
+    // Initialize audio objects on client side only
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setCorrectSound(new Audio('/sounds/correct.mp3'));
+            setWrongSound(new Audio('/sounds/error.mp3'));
+        }
+    }, []);
+
+    // Play sound effect
+    const playSound = (isCorrect: boolean) => {
+        if (!started || paused) return;
+        
+        const sound = isCorrect ? correctSound : wrongSound;
+        if (!sound) return;
+        
+        try {
+            sound.currentTime = 0;
+            sound.volume = 0.3;
+            sound.play().catch((e: any) => console.log('Audio play failed:', e));
+        } catch (error) {
+            console.log('Audio error:', error);
+        }
+    };
+
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (completed || !selectedTime || !started || paused) return;
         if (e.key === 'Backspace') { e.preventDefault(); return; }
@@ -152,10 +180,17 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
         if (charIndexInWord < currentWord.length) {
             // Typing characters of the word
             setWordTypedHistory(prev => [...prev, { char: mappedChar, isCorrect }]);
-            setCharIndexInWord(prev => prev + 1);
-            if (!isCorrect) {
+            
+            // Play sound feedback
+            playSound(isCorrect);
+            
+            // Only advance if correct key is pressed
+            if (isCorrect) {
+                setCharIndexInWord(prev => prev + 1);
+            } else {
                 setIncorrectChars(prev => [...prev, mappedChar]);
             }
+            
             setStats(prev => ({
                 ...prev,
                 totalTyped: prev.totalTyped + 1,
@@ -164,6 +199,8 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
             }));
         } else if (charIndexInWord === currentWord.length && mappedChar === ' ') {
             // Finished word, user pressed space
+            playSound(true); // Space is always correct when finishing word
+            
             if (currentWordIndex + 1 >= words.length) {
                 setCompleted(true);
             } else {
