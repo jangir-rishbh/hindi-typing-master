@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { keyboardRows, KeyData } from '../data/keyboardLayout';
 
 interface VisualKeyboardProps {
-    activeKeyId?: string | null;     // The key the user SHOULD press
+    activeKeyId?: string | null;     // The key that should be highlighted as target
     pressedKeyId?: string | null;    // The key the user JUST pressed
     isShiftRequired?: boolean;       // If true, highlight Shift keys
-    activeLessonId?: number | null;  // Current lesson ID for highlighting
+    activeLessonId?: string | null;  // Current lesson ID for highlighting
     lessonKeys?: string[];           // Keys for current lesson
     isWrongKey?: boolean;            // If the pressed key is wrong
 }

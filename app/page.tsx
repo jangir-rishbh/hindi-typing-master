@@ -2,22 +2,23 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { lessons } from '../data/lessons';
+import { lessonsConfig, getAllLessons } from '../data/lessonsConfig';
 
 export default function Home() {
-  const [currentLessonId, setCurrentLessonId] = useState(1);
-  const currentLesson = lessons.find(lesson => lesson.id === currentLessonId);
-  const totalLessons = lessons.length;
+  const allLessons = getAllLessons();
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+  const currentLesson = allLessons[currentLessonIndex];
+  const totalLessons = allLessons.length;
 
   const handleNextLesson = () => {
-    if (currentLessonId < totalLessons) {
-      setCurrentLessonId(currentLessonId + 1);
+    if (currentLessonIndex < totalLessons - 1) {
+      setCurrentLessonIndex(currentLessonIndex + 1);
     }
   };
 
   const handlePrevLesson = () => {
-    if (currentLessonId > 1) {
-      setCurrentLessonId(currentLessonId - 1);
+    if (currentLessonIndex > 0) {
+      setCurrentLessonIndex(currentLessonIndex - 1);
     }
   };
   return (
@@ -85,9 +86,9 @@ export default function Home() {
           </div>
 
           <div className="relative z-10 pt-10">
-            <Link href={`/lesson/${currentLessonId}`} className="block w-full">
+            <Link href={`/lesson/${currentLesson.id}`} className="block w-full">
               <button className="w-full bg-primary text-white hover:bg-primary-dark font-black py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.2)] transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
-                <span className="text-base">Start Lesson {currentLessonId}</span>
+                <span className="text-base">Start Lesson {currentLessonIndex + 1}</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </Link>
@@ -99,10 +100,10 @@ export default function Home() {
           <div className="flex justify-between items-end mb-8">
             <div>
               <h2 className="text-2xl font-black text-slate-900">Current Lesson</h2>
-              <p className="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold">Lesson {currentLessonId} of {totalLessons}</p>
+              <p className="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold">Lesson {currentLessonIndex + 1} of {totalLessons}</p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-slate-400 uppercase tracking-tighter">{currentLessonId.toString().padStart(2, '0')}</span>
+              <span className="text-2xl font-black text-slate-400 uppercase tracking-tighter">{(currentLessonIndex + 1).toString().padStart(2, '0')}</span>
             </div>
           </div>
 
@@ -127,9 +128,9 @@ export default function Home() {
               <div className="flex justify-between items-center mt-8 gap-4">
                 <button
                   onClick={handlePrevLesson}
-                  disabled={currentLessonId === 1}
+                  disabled={currentLessonIndex === 0}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all duration-300 ${
-                    currentLessonId === 1
+                    currentLessonIndex === 0
                       ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
                       : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:-translate-y-0.5 active:scale-[0.98]'
                   }`}
@@ -142,9 +143,9 @@ export default function Home() {
                   {Array.from({ length: totalLessons }, (_, i) => i + 1).map((lessonNum) => (
                     <button
                       key={lessonNum}
-                      onClick={() => setCurrentLessonId(lessonNum)}
+                      onClick={() => setCurrentLessonIndex(lessonNum - 1)}
                       className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        lessonNum === currentLessonId
+                        lessonNum - 1 === currentLessonIndex
                           ? 'bg-primary w-8'
                           : 'bg-slate-300 hover:bg-slate-400'
                       }`}
@@ -155,9 +156,9 @@ export default function Home() {
 
                 <button
                   onClick={handleNextLesson}
-                  disabled={currentLessonId === totalLessons}
+                  disabled={currentLessonIndex === totalLessons - 1}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all duration-300 ${
-                    currentLessonId === totalLessons
+                    currentLessonIndex === totalLessons - 1
                       ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
                       : 'bg-primary text-white hover:bg-primary-dark hover:-translate-y-0.5 active:scale-[0.98] shadow-md'
                   }`}

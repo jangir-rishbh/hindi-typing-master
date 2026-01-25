@@ -2,12 +2,13 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import TypingTutor from '../../../components/TypingTutor';
-import { lessons } from '../../../data/lessons';
+import { lessonsConfig, getAllLessons } from '../../../data/lessonsConfig';
 
 
 export async function generateStaticParams() {
+    const lessons = getAllLessons();
     return lessons.map((lesson) => ({
-        id: lesson.id.toString(),
+        id: lesson.id,
     }));
 }
 
@@ -19,16 +20,19 @@ interface PageProps {
 
 export default async function LessonPage({ params }: PageProps) {
     const { id } = await params;
-    const lessonId = parseInt(id);
-    const lesson = lessons.find(l => l.id === lessonId);
-
+    const lessonId = id;
+    
+    // Validate lesson exists
+    const { getLessonById } = await import('../../../data/lessonsConfig');
+    const lesson = getLessonById(lessonId);
+    
     if (!lesson) {
         notFound();
     }
 
     return (
         <main className="min-h-screen bg-tm-bg pb-8 w-full overflow-x-hidden">
-            <TypingTutor lesson={lesson} />
+            <TypingTutor lessonId={lessonId} />
         </main>
     );
 }

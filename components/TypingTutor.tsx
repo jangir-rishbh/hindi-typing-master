@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lesson } from '../data/lessons';
+import { lessonsConfig, getLessonById } from '../data/lessonsConfig';
 import { keyboardRows } from '../data/keyboardLayout';
 import VisualKeyboard from './VisualKeyboard';
 import HandsGuidance from './HandsGuidance';
 import { jsPDF } from 'jspdf';
 
 interface TypingTutorProps {
-    lesson: Lesson;
+    lessonId: string;
 }
 
 interface TypedChar {
@@ -52,20 +52,49 @@ const getKeyDataForChar = (char: string) => {
     return { id: null, shift: false, finger: null };
 };
 
-export default function TypingTutor({ lesson }: TypingTutorProps) {
+export default function TypingTutor({ lessonId }: TypingTutorProps) {
     const router = useRouter();
+    
+    // Get lesson configuration
+    const lesson = getLessonById(lessonId);
+    
+    if (!lesson) {
+        return <div>Lesson not found</div>;
+    }
 
-    // Transform lesson content into unique words repeated 3 times
-    const words = useMemo(() => {
+    // Home row characters for mixing
+    const homeRowCharacters = ['ो', 'ओ', 'े', 'ए', '्', 'अ', 'ि', 'इ', 'ु', 'उ', 'प', 'फ', 'र', 'ऱ', 'क', 'ख', 'त', 'थ', 'च', 'छ', 'ट', 'ठ'];
+    
+    // Generate typing prompt from current lesson content ONLY
+    const generateTypingPrompt = useCallback(() => {
         const rawWords = lesson.content.trim().split(/\s+/);
-        // Get unique words only to ensure "ak font sirf tin baar aaye" (each word only 3 times)
         const uniqueWords = Array.from(new Set(rawWords));
+        
+        // Always use pure lesson content - no special cases
         const processed: string[] = [];
         uniqueWords.forEach(word => {
-            processed.push(word, word, word);
+            processed.push(word, word, word); // Each word 3 times
         });
         return processed;
-    }, [lesson.content]);
+    }, [lesson.content]); // Only depends on lesson.content
+
+    // Reset typing prompt state on lesson change
+    useEffect(() => {
+        // Reset all typing-related state when lesson changes
+        setCurrentWordIndex(0);             // Reset cursor / target index
+        setCharIndexInWord(0);             // Reset character position
+        setWordTypedHistory([]);           // Clear typing history
+        setIncorrectChars([]);             // Clear errors
+        setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
+        setCompleted(false);
+        setStarted(false);
+        setPaused(false);
+    }, [lessonId, lesson.content]); // Trigger on lesson change
+    
+    // Transform lesson content into typing prompt
+    const words = useMemo(() => {
+        return generateTypingPrompt();
+    }, [generateTypingPrompt]);
 
     const [started, setStarted] = useState(false);
     const [paused, setPaused] = useState(false);
@@ -82,6 +111,19 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
     const [charIndexInWord, setCharIndexInWord] = useState(0);
     const [wordTypedHistory, setWordTypedHistory] = useState<TypedChar[]>([]);
     const [incorrectChars, setIncorrectChars] = useState<string[]>([]);
+
+    // Reset function for lesson restart/change
+    const resetLesson = useCallback(() => {
+        setCurrentWordIndex(0);             // Reset cursor / target index
+        setCharIndexInWord(0);             // Reset character position
+        setWordTypedHistory([]);           // Clear typing history
+        setIncorrectChars([]);             // Clear errors
+        setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
+        setCompleted(false);
+        setStarted(false);
+        setPaused(false);
+        setTimeLeft(selectedTime || 0);
+    }, [selectedTime]);
     const [pressedKey, setPressedKey] = useState<string | null>(null);
     const [isWrongKey, setIsWrongKey] = useState(false);
 
@@ -510,18 +552,8 @@ export default function TypingTutor({ lesson }: TypingTutorProps) {
                         <div className="flex gap-4">
                             <button
                                 onClick={() => {
-                                    setStarted(false);
-                                    setPaused(false);
-                                    setStartTime(null);
-                                    setPauseTime(null);
-                                    setSelectedTime(null);
-                                    setTimeLeft(0);
-                                    setCompleted(false);
-                                    setCurrentWordIndex(0);
-                                    setCharIndexInWord(0);
-                                    setWordTypedHistory([]);
-                                    setIncorrectChars([]);
-                                    setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
+                                    resetLesson();
+                                    setShowTimeSelection(true);
                                 }}
                                 className="flex-1 bg-slate-100 py-4 rounded-2xl font-black"
                             >

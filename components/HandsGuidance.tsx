@@ -6,7 +6,7 @@ import { keyboardRows, KeyData } from '../data/keyboardLayout';
 interface HandsGuidanceProps {
     activeFinger?: string | null; // e.g., 'l-pinky', 'r-index'
     pressedKeyId?: string | null; // The key that was just pressed
-    activeLessonId?: number | null; // Current lesson ID
+    activeLessonId?: string | null; // Current lesson ID
     lessonKeys?: string[]; // Keys for current lesson
 }
 
@@ -84,11 +84,20 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
     const fingerColors = getFingerColorsForLesson(lessonKeys);
 
     // Get lesson info
-    const getLessonInfo = (lessonId: number | null) => {
+    const getLessonInfo = (lessonId: string | null) => {
         switch (lessonId) {
-            case 1: return { title: 'Home Row Finger Guidance', subtitle: 'Learn which finger to use for A, S, D, F, G, H, J, K, L, ; and Space keys' };
-            case 2: return { title: 'Upper Row Finger Guidance', subtitle: 'Learn which finger to use for Q, W, E, R, T, Y, U, I, O, P and Space keys' };
-            case 3: return { title: 'Lower Row Finger Guidance', subtitle: 'Learn which finger to use for Z, X, C, V, B, N, M, ,, ., / and Space keys' };
+            case 'home-row': return { title: 'Home Row Finger Guidance', subtitle: 'Learn which finger to use for A, S, D, F, G, H, J, K, L, ; and Space keys' };
+            case 'upper-row-1': 
+            case 'upper-row-2': 
+            case 'upper-row-3': 
+            case 'upper-row-4': 
+            case 'upper-row-5': 
+            case 'upper-row-6': return { title: 'Upper Row Finger Guidance', subtitle: 'Learn which finger to use for upper row keys and Space keys' };
+            case 'lower-row-1': 
+            case 'lower-row-2': 
+            case 'lower-row-3': 
+            case 'lower-row-4': 
+            case 'lower-row-5': return { title: 'Lower Row Finger Guidance', subtitle: 'Learn which finger to use for lower row keys and Space keys' };
             default: return { title: 'Finger Guidance', subtitle: 'Learn which finger to use for each key' };
         }
     };
@@ -96,56 +105,50 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
     const lessonInfo = getLessonInfo(activeLessonId || null);
 
     // Get legend items for each lesson
-    const getLegendItems = (lessonId: number | null) => {
+    const getLegendItems = (lessonId: string | null) => {
         switch (lessonId) {
-            case 1: // Home Row - ASDF GH JKL; + Space
+            case 'home-row': // Home Row - ASDF GH JKL; + Space
                 return [
                     { color: 'bg-pink-400', label: `${getHindiCharacterForKey('A')} = Left Pinky` },
                     { color: 'bg-blue-400', label: `${getHindiCharacterForKey('S')} = Left Ring` },
                     { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('D')} = Left Middle` },
-                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['F', 'G'])} = Left Index` },
-                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['H', 'J'])} = Right Index` },
+                    { color: 'bg-green-400', label: `${getHindiCharacterForKey('F')} = Left Index` },
+                    { color: 'bg-purple-400', label: `${getHindiCharacterForKey('G')} = Left Index` },
+                    { color: 'bg-orange-500', label: `${getHindiCharacterForKey('H')} = Right Index` },
+                    { color: 'bg-green-500', label: `${getHindiCharacterForKey('J')} = Right Index` },
                     { color: 'bg-yellow-500', label: `${getHindiCharacterForKey('K')} = Right Middle` },
                     { color: 'bg-blue-500', label: `${getHindiCharacterForKey('L')} = Right Ring` },
                     { color: 'bg-pink-500', label: `${getHindiCharacterForKey(';')} = Right Pinky` },
-                    { color: 'bg-orange-500', label: 'Space = Right Thumb' }
+                    { color: 'bg-orange-500', label: `Space = Right Thumb` }
                 ];
-            case 2: // Upper Row + Space
-                return [
-                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('Q')} = Left Pinky` },
-                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('W')} = Left Ring` },
-                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('E')} = Left Middle` },
-                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['R', 'T'])} = Left Index` },
-                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['Y', 'U'])} = Right Index` },
-                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey('I')} = Right Middle` },
-                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('O')} = Right Ring` },
-                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey('P')} = Right Pinky` },
-                    { color: 'bg-orange-500', label: 'Space = Right Thumb' }
-                ];
-            case 3: // Lower Row + Space
-                return [
-                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('Z')} = Left Pinky` },
-                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('X')} = Left Ring` },
-                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('C')} = Left Middle` },
-                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['V', 'B'])} = Left Index` },
-                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['N', 'M'])} = Right Index` },
-                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey(',')} = Right Middle` },
-                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('.')} = Right Ring` },
-                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey('/')} = Right Pinky` },
-                    { color: 'bg-orange-500', label: 'Space = Right Thumb' }
-                ];
-            default: // Default to home row - ASDF GH JKL; + Space
-                return [
-                    { color: 'bg-pink-400', label: `${getHindiCharacterForKey('A')} = Left Pinky` },
-                    { color: 'bg-blue-400', label: `${getHindiCharacterForKey('S')} = Left Ring` },
-                    { color: 'bg-yellow-400', label: `${getHindiCharacterForKey('D')} = Left Middle` },
-                    { color: 'bg-green-400', label: `${getHindiCharactersForKeys(['F', 'G'])} = Left Index` },
-                    { color: 'bg-green-500', label: `${getHindiCharactersForKeys(['H', 'J'])} = Right Index` },
-                    { color: 'bg-yellow-500', label: `${getHindiCharacterForKey('K')} = Right Middle` },
-                    { color: 'bg-blue-500', label: `${getHindiCharacterForKey('L')} = Right Ring` },
-                    { color: 'bg-pink-500', label: `${getHindiCharacterForKey(';')} = Right Pinky` },
-                    { color: 'bg-orange-500', label: 'Space = Right Thumb' }
-                ];
+            default: // For all other lessons, use lessonKeys
+                return lessonKeys.slice(0, 10).map(keyId => {
+                    for (const row of keyboardRows) {
+                        for (const key of row) {
+                            if (key.id === keyId) {
+                                const fingerColors: Record<string, string> = {
+                                    'l-pinky': 'bg-pink-400',
+                                    'l-ring': 'bg-blue-400',
+                                    'l-middle': 'bg-yellow-400',
+                                    'l-index': 'bg-green-400',
+                                    'l-thumb': 'bg-purple-400',
+                                    'r-thumb': 'bg-orange-500',
+                                    'r-index': 'bg-green-500',
+                                    'r-middle': 'bg-yellow-500',
+                                    'r-ring': 'bg-blue-500',
+                                    'r-pinky': 'bg-pink-500',
+                                };
+                                const char = key.hindi || key.label;
+                                const fingerName = key.finger ? key.finger.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Unknown';
+                                return {
+                                    color: fingerColors[key.finger || ''] || 'bg-gray-400',
+                                    label: `${char} = ${fingerName}`
+                                };
+                            }
+                        }
+                    }
+                    return { color: 'bg-gray-400', label: 'Unknown' };
+                }).filter(item => item.label !== 'Unknown = Unknown');
         }
     };
 
@@ -202,7 +205,7 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
 
                 {/* Finger Color Guide */}
                 <div className={`grid gap-4 ${
-                    activeLessonId === 1
+                    activeLessonId === 'home-row'
                         ? 'grid-cols-3 md:grid-cols-5 lg:grid-cols-9'
                         : Object.keys(fingerColors).length <= 5
                         ? 'grid-cols-2 md:grid-cols-5'
@@ -255,10 +258,10 @@ const HandsGuidance: React.FC<HandsGuidanceProps> = ({ activeFinger, pressedKeyI
                 <div className="mt-6 pt-4 border-t border-slate-200">
                     <div className="text-center">
                         <div className="text-sm font-semibold text-slate-700 mb-2">
-                            {activeLessonId === 1 ? 'Home Row Keys' : activeLessonId === 2 ? 'Upper Row Keys' : activeLessonId === 3 ? 'Lower Row Keys' : 'Keys'}
+                            {activeLessonId === 'home-row' ? 'Home Row Keys' : 'Keys'}
                         </div>
                         <div className={`grid gap-4 text-xs text-slate-600 ${
-                            activeLessonId === 1
+                            activeLessonId === 'home-row'
                                 ? 'grid-cols-3 md:grid-cols-5 lg:grid-cols-9'
                                 : legendItems.length <= 5
                                 ? 'grid-cols-2 md:grid-cols-5'
