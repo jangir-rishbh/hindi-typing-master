@@ -68,12 +68,11 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     // Generate typing prompt from current lesson content ONLY
     const generateTypingPrompt = useCallback(() => {
         const rawWords = lesson.content.trim().split(/\s+/);
-        const uniqueWords = Array.from(new Set(rawWords));
         
-        // Always use pure lesson content - no special cases
+        // Use all words as they appear in content (no deduplication)
         const processed: string[] = [];
-        uniqueWords.forEach(word => {
-            processed.push(word, word, word); // Each word 3 times
+        rawWords.forEach(word => {
+            processed.push(word, word, word, word, word, word); // Each word 6 times
         });
         return processed;
     }, [lesson.content]); // Only depends on lesson.content
@@ -476,7 +475,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         <p className="text-slate-600 mb-8">Choose how long you want to practice this lesson</p>
 
                         <div className="grid grid-cols-3 gap-4 mb-8">
-                            {[5, 10, 15, 20, 30].map((minutes) => (
+                            {[1, 2, 3, 4, 5].map((minutes) => (
                                 <button
                                     key={minutes}
                                     onClick={() => {
