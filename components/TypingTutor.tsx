@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { lessonsConfig, getLessonById } from '../data/lessonsConfig';
 import { keyboardRows } from '../data/keyboardLayout';
 import VisualKeyboard from './VisualKeyboard';
@@ -54,28 +54,31 @@ const getKeyDataForChar = (char: string) => {
 
 export default function TypingTutor({ lessonId }: TypingTutorProps) {
     const router = useRouter();
-    
+    const searchParams = useSearchParams();
+    const isParagraphMode = searchParams.get('mode') === 'paragraph';
+
     // Get lesson configuration
     const lesson = getLessonById(lessonId);
-    
+
     if (!lesson) {
         return <div>Lesson not found</div>;
     }
 
     // Home row characters for mixing
     const homeRowCharacters = ['ो', 'ओ', 'े', 'ए', '्', 'अ', 'ि', 'इ', 'ु', 'उ', 'प', 'फ', 'र', 'ऱ', 'क', 'ख', 'त', 'थ', 'च', 'छ', 'ट', 'ठ'];
-    
-    // Generate typing prompt from current lesson content ONLY
+
+    // Generate typing prompt — word mode repeats each word 6x, paragraph mode uses natural text once
     const generateTypingPrompt = useCallback(() => {
+        if (isParagraphMode && lesson.paragraph) {
+            return lesson.paragraph.trim().split(/\s+/);
+        }
         const rawWords = lesson.content.trim().split(/\s+/);
-        
-        // Use all words as they appear in content (no deduplication)
         const processed: string[] = [];
         rawWords.forEach(word => {
-            processed.push(word, word, word, word, word, word); // Each word 6 times
+            processed.push(word, word, word, word, word, word);
         });
         return processed;
-    }, [lesson.content]); // Only depends on lesson.content
+    }, [lesson.content, lesson.paragraph, isParagraphMode]);
 
     // Reset typing prompt state on lesson change
     useEffect(() => {
@@ -89,7 +92,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         setStarted(false);
         setPaused(false);
     }, [lessonId, lesson.content]); // Trigger on lesson change
-    
+
     // Transform lesson content into typing prompt
     const words = useMemo(() => {
         return generateTypingPrompt();
@@ -168,7 +171,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     // Audio feedback setup
     const [correctSound, setCorrectSound] = useState<HTMLAudioElement | null>(null);
     const [wrongSound, setWrongSound] = useState<HTMLAudioElement | null>(null);
-    
+
     // Initialize audio objects on client side only
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -180,10 +183,10 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     // Play sound effect
     const playSound = (isCorrect: boolean) => {
         if (!started || paused) return;
-        
+
         const sound = isCorrect ? correctSound : wrongSound;
         if (!sound) return;
-        
+
         try {
             sound.currentTime = 0;
             sound.volume = 0.3;
@@ -207,11 +210,11 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
 
         // Visual feedback
         setPressedKey(e.code);
-        
+
         // Check if this is a wrong key press
         const isWrongKeyPressed = !isCorrect && mappedChar !== ' ';
         setIsWrongKey(isWrongKeyPressed);
-        
+
         setTimeout(() => {
             setPressedKey(null);
             setIsWrongKey(false);
@@ -221,17 +224,17 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         if (charIndexInWord < currentWord.length) {
             // Typing characters of the word
             setWordTypedHistory(prev => [...prev, { char: mappedChar, isCorrect }]);
-            
+
             // Play sound feedback
             playSound(isCorrect);
-            
+
             // Only advance if correct key is pressed
             if (isCorrect) {
                 setCharIndexInWord(prev => prev + 1);
             } else {
                 setIncorrectChars(prev => [...prev, mappedChar]);
             }
-            
+
             setStats(prev => ({
                 ...prev,
                 totalTyped: prev.totalTyped + 1,
@@ -241,7 +244,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         } else if (charIndexInWord === currentWord.length && mappedChar === ' ') {
             // Finished word, user pressed space
             playSound(true); // Space is always correct when finishing word
-            
+
             if (currentWordIndex + 1 >= words.length) {
                 setCompleted(true);
             } else {
@@ -388,9 +391,9 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         const isCurrent = idx === 0;
                         const currentWord = words[currentWordIndex];
                         const isSameWord = word === currentWord;
-                        
+
                         if (!isSameWord) return null;
-                        
+
                         return (
                             <div key={`${currentWordIndex}-${idx}`} className={`flex flex-col items-center transition-all duration-500 ${isCurrent ? 'scale-110' : 'scale-90 opacity-60'}`}>
                                 <div className={`hindi-text text-3xl md:text-4xl font-bold p-4 rounded-2xl transition-all ${isCurrent ? 'bg-primary/10 text-primary shadow-[0_10px_30px_-10px_rgba(99,102,241,0.4)] border-2 border-primary/20' : 'bg-slate-100 text-slate-600 border-2 border-slate-200'}`}>
@@ -449,20 +452,20 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
 
             {/* Keyboard Guidance (Full Width) */}
             <div className="glass-panel p-2 md:p-3 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-2 w-full flex-shrink-0">
-                <VisualKeyboard 
-                    activeKeyId={activeKeyId} 
-                    pressedKeyId={pressedKey} 
-                    isShiftRequired={isShiftRequired} 
-                    activeLessonId={lesson.id} 
+                <VisualKeyboard
+                    activeKeyId={activeKeyId}
+                    pressedKeyId={pressedKey}
+                    isShiftRequired={isShiftRequired}
+                    activeLessonId={lesson.id}
                     lessonKeys={lesson.keys}
                     isWrongKey={isWrongKey}
                 />
                 <div className="w-full">
-                    <HandsGuidance 
-                        activeFinger={activeFinger} 
-                        pressedKeyId={pressedKey} 
-                        activeLessonId={lesson.id} 
-                        lessonKeys={lesson.keys} 
+                    <HandsGuidance
+                        activeFinger={activeFinger}
+                        pressedKeyId={pressedKey}
+                        activeLessonId={lesson.id}
+                        lessonKeys={lesson.keys}
                     />
                 </div>
             </div>

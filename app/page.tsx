@@ -103,90 +103,88 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative z-10 pt-8">
+          <div className="relative z-10 pt-8 flex flex-col gap-3">
             <Link href={`/lesson/${currentLesson.id}`} className="block w-full">
-              <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-indigo-500/30 transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
-                <span className="text-base">Start Lesson {currentLessonIndex + 1}</span>
-                <span className="group-hover:translate-x-1 transition-transform text-lg">→</span>
+              <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-500/30 transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h12M4 14h8" /></svg>
+                <span className="text-sm">Word Practice</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            </Link>
+            <Link href={`/lesson/${currentLesson.id}?mode=paragraph`} className="block w-full">
+              <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-500/30 transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <span className="text-sm">Paragraph Practice</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
               </button>
             </Link>
           </div>
         </div>
 
-        {/* Single Lesson Display */}
+        {/* All Lessons List */}
         <div className="w-full md:w-[65%] p-6 md:p-10 overflow-y-auto custom-scrollbar bg-tm-bg">
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <h2 className="text-2xl font-black text-slate-900">Current Lesson</h2>
-              <p className="text-slate-500 text-sm mt-1 uppercase tracking-widest font-bold">Lesson {currentLessonIndex + 1} of {totalLessons}</p>
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-black text-slate-400 uppercase tracking-tighter">{(currentLessonIndex + 1).toString().padStart(2, '0')}</span>
-            </div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-black text-slate-900">Choose a Lesson</h2>
+            <p className="text-slate-500 font-medium opacity-70">Select a lesson to start your practice</p>
           </div>
 
-          {currentLesson && (
-            <div className="animate-slide-up">
-              <Link href={`/lesson/${currentLesson.id}`} className="block group">
-                <div className="flex items-center p-8 bg-white rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer border border-slate-200 hover:-translate-y-0.5">
-                  <div className="h-16 w-16 flex items-center justify-center bg-primary text-white font-black text-2xl rounded-xl mr-6 group-hover:bg-primary-dark transition-all duration-300 shadow-md">
-                    {currentLesson.id.toString().padStart(2, '0')}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black text-slate-800 group-hover:text-primary transition-colors">{currentLesson.title}</h3>
-                    <p className="text-base text-slate-500 font-medium opacity-80 mt-2">{currentLesson.description}</p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 border border-slate-200 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                    <span className="text-slate-400 group-hover:text-primary transition-colors text-xl">→</span>
-                  </div>
-                </div>
-              </Link>
-
-              {/* Navigation Buttons */}
-              <div className="flex justify-between items-center mt-8 gap-4">
-                <button
-                  onClick={handlePrevLesson}
-                  disabled={currentLessonIndex === 0}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all duration-300 ${
-                    currentLessonIndex === 0
-                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:-translate-y-0.5 active:scale-[0.98]'
+          <div className="flex flex-col gap-4">
+            {allLessons.map((lesson, index) => {
+              const isSelected = currentLessonIndex === index;
+              return (
+                <div 
+                  key={lesson.id}
+                  onClick={() => setCurrentLessonIndex(index)}
+                  className={`group relative overflow-hidden flex flex-col p-6 rounded-[2rem] transition-all duration-300 cursor-pointer border-2 ${
+                    isSelected 
+                      ? "bg-white border-primary shadow-[0_20px_40px_-15px_rgba(99,102,241,0.2)] scale-[1.02]" 
+                      : "bg-white/50 border-slate-100 hover:border-slate-300 hover:bg-white"
                   }`}
                 >
-                  <span className="text-lg">←</span>
-                  <span>Previous</span>
-                </button>
+                  <div className="flex items-center">
+                    <div className={`h-24 w-24 flex items-center justify-center bg-gradient-to-br transition-all duration-500 rounded-[2rem] mr-8 shadow-lg flex-shrink-0 text-center p-4 leading-[1.1] ${
+                      isSelected ? "from-primary to-indigo-600 shadow-primary/30" : "from-slate-200 to-slate-300 shadow-slate-200 grayscale"
+                    }`}>
+                      <span className={`text-[13px] font-black uppercase tracking-tighter whitespace-pre-line ${isSelected ? "text-white" : "text-slate-600"}`}>
+                        {lesson.id.replace(/row-/g, 'row\n').replace(/-/g, ' ')}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className={`text-xl font-black transition-colors ${isSelected ? "text-slate-900" : "text-slate-700"}`}>
+                          {lesson.title}
+                        </h3>
+                        <span className={`text-sm font-black tracking-widest ${isSelected ? "text-primary/40" : "text-slate-300"}`}>
+                          {(index + 1).toString().padStart(2, '0')}
+                        </span>
+                      </div>
+                      <p className={`text-sm font-medium transition-colors ${isSelected ? "text-slate-500" : "text-slate-400 opacity-80"}`}>
+                        {lesson.description}
+                      </p>
+                    </div>
+                  </div>
 
-                <div className="flex gap-2">
-                  {Array.from({ length: totalLessons }, (_, i) => i + 1).map((lessonNum) => (
-                    <button
-                      key={lessonNum}
-                      onClick={() => setCurrentLessonIndex(lessonNum - 1)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        lessonNum - 1 === currentLessonIndex
-                          ? 'bg-primary w-8'
-                          : 'bg-slate-300 hover:bg-slate-400'
-                      }`}
-                      aria-label={`Go to lesson ${lessonNum}`}
-                    />
-                  ))}
+                  {/* Row-wise Practice Buttons (Visible only when selected) */}
+                  <div className={`grid grid-cols-2 gap-4 transition-all duration-500 ease-out overflow-hidden ${
+                    isSelected ? "max-h-40 mt-8 opacity-100" : "max-h-0 mt-0 opacity-0 pointer-events-none"
+                  }`}>
+                    <Link href={`/lesson/${lesson.id}`} className="block">
+                      <button className="w-full h-full flex items-center justify-center gap-3 px-6 py-4 bg-primary hover:bg-primary-dark text-white font-black rounded-2xl text-base transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h12M4 14h8" /></svg>
+                        Word Practice
+                      </button>
+                    </Link>
+                    <Link href={`/lesson/${lesson.id}?mode=paragraph`} className="block">
+                      <button className="w-full h-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl text-base transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-emerald-500/20">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        Paragraph Practice
+                      </button>
+                    </Link>
+                  </div>
                 </div>
-
-                <button
-                  onClick={handleNextLesson}
-                  disabled={currentLessonIndex === totalLessons - 1}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all duration-300 ${
-                    currentLessonIndex === totalLessons - 1
-                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                      : 'bg-primary text-white hover:bg-primary-dark hover:-translate-y-0.5 active:scale-[0.98] shadow-md'
-                  }`}
-                >
-                  <span>Next</span>
-                  <span className="text-lg">→</span>
-                </button>
-              </div>
-            </div>
-          )}
+              );
+            })}
+          </div>
 
           <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500">
             <div className="flex items-center justify-center gap-4 opacity-40 grayscale hover:grayscale-0 transition-all">

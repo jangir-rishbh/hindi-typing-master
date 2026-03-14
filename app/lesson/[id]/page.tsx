@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import TypingTutor from '../../../components/TypingTutor';
-import { lessonsConfig, getAllLessons } from '../../../data/lessonsConfig';
+import { getAllLessons } from '../../../data/lessonsConfig';
 
 
 export async function generateStaticParams() {
@@ -21,18 +21,20 @@ interface PageProps {
 export default async function LessonPage({ params }: PageProps) {
     const { id } = await params;
     const lessonId = id;
-    
+
     // Validate lesson exists
     const { getLessonById } = await import('../../../data/lessonsConfig');
     const lesson = getLessonById(lessonId);
-    
+
     if (!lesson) {
         notFound();
     }
 
     return (
         <main className="min-h-screen bg-tm-bg pb-8 w-full overflow-x-hidden">
-            <TypingTutor lessonId={lessonId} />
+            <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+                <TypingTutor lessonId={lessonId} />
+            </Suspense>
         </main>
     );
 }

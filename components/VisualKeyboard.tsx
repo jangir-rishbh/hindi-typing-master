@@ -20,13 +20,21 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
 }) => {
 
     const getKeyStyle = (key: KeyData) => {
-        let base = "relative flex flex-col items-center justify-center m-[4px] rounded-2xl transition-all duration-75 select-none group ";
+        let base = "relative flex flex-col items-center justify-center m-[2px] md:m-[4px] rounded-lg md:rounded-2xl transition-all duration-75 select-none group ";
 
         // Width handling
+        const specialWidths: Record<string, string> = {
+            'w-20': 'w-10 md:w-20',
+            'w-24': 'w-12 md:w-24',
+            'w-32': 'w-16 md:w-32',
+            'w-96': 'w-40 md:w-96'
+        };
+
         if (key.width) {
-            base += key.width + " ";
+            base += (specialWidths[key.width] || key.width) + " ";
+            base += "h-8 md:h-12 ";
         } else {
-            base += "flex-1 h-10 md:h-12 ";
+            base += "flex-1 h-8 md:h-12 ";
         }
 
         const isTarget = key.id === activeKeyId;
@@ -108,13 +116,6 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                 <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
             </div>
 
-            <div className="absolute top-4 right-10 flex items-center gap-3 opacity-30 pointer-events-none">
-                <div className="flex flex-col items-end">
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Unicode InScript</span>
-                    <span className="text-[6px] font-bold text-primary italic">Precision Series v2.0</span>
-                </div>
-            </div>
-
             <div className="flex flex-col gap-1 relative z-10 pt-4">
                 {keyboardRows.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex w-full justify-center">
@@ -132,21 +133,21 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
                                     <div className={`absolute inset-0 rounded-2xl transition-opacity ${isPressed ? 'bg-black/10' : 'bg-white/5 opacity-0 group-hover:opacity-100'}`}></div>
 
                                     {/* Hindi Characters - Base and Shift */}
-                                    <div className="flex flex-col items-center justify-center pt-2 relative z-10">
+                                    <div className="flex flex-col items-center justify-center pt-1 md:pt-2 relative z-10">
                                         {/* Shift Component (Upper Legend) */}
                                         {key.shiftHindi && (
-                                            <span className={`text-[14px] md:text-[15px] hindi-text font-black transition-all transform ${isTarget || isPressed ? 'text-white drop-shadow-lg' : (isShiftRequired ? 'text-cyan-400 scale-110 drop-shadow-md' : 'text-white drop-shadow-sm')}`}>
+                                            <span className={`text-[10px] md:text-[15px] hindi-text font-black transition-all transform ${isTarget || isPressed ? 'text-white drop-shadow-lg' : (isShiftRequired ? 'text-cyan-400 scale-110 drop-shadow-md' : 'text-white drop-shadow-sm')}`}>
                                                 {key.shiftHindi}
                                             </span>
                                         )}
 
                                         {/* Main Component - Base Character */}
                                         {key.hindi ? (
-                                            <span className={`text-3xl md:text-4xl font-black hindi-text -mt-1 transition-all ${isTarget || isPressed ? 'text-white drop-shadow-lg' : (isShiftRequired ? 'opacity-30 translate-y-1' : 'text-white drop-shadow-md')}`}>
+                                            <span className={`text-xl md:text-4xl font-black hindi-text -mt-1 transition-all ${isTarget || isPressed ? 'text-white drop-shadow-lg' : (isShiftRequired ? 'opacity-30 translate-y-1' : 'text-white drop-shadow-md')}`}>
                                                 {key.hindi}
                                             </span>
                                         ) : (
-                                            <span className="text-[12px] md:text-[13px] font-black uppercase text-white drop-shadow-md tracking-wider">
+                                            <span className="text-[8px] md:text-[13px] font-black uppercase text-white drop-shadow-md tracking-wider">
                                                 {key.id === 'Space' ? 'SPACE' : 
                                                  key.id === 'CapsLock' ? 'CAPS' :
                                                  key.id === 'ShiftLeft' || key.id === 'ShiftRight' ? 'SHIFT' :
@@ -162,7 +163,7 @@ const VisualKeyboard: React.FC<VisualKeyboardProps> = ({
 
                                     {/* State Glow */}
                                     {isTarget && !isPressed && (
-                                        <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse -z-10"></div>
+                                        <div className="absolute inset-0 bg-primary/20 rounded-lg md:rounded-2xl blur-lg md:blur-xl animate-pulse -z-10"></div>
                                     )}
                                 </div>
                             )
