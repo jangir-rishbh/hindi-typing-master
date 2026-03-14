@@ -25,7 +25,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
-      <body className="antialiased min-h-screen font-sans">
+      <body className="antialiased min-h-[143vh] font-sans">
         {children}
       </body>
     </html>

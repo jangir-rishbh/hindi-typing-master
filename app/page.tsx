@@ -22,8 +22,8 @@ export default function Home() {
     }
   };
   return (
-    <main className="min-h-screen flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-x-hidden">
-      <div className="max-w-7xl w-full bg-tm-panel rounded-none md:rounded-[2rem] overflow-hidden flex flex-col md:flex-row min-h-screen md:min-h-[800px] border border-white/20 shadow-2xl relative z-10">
+    <main className="min-h-[143vh] flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-x-hidden">
+      <div className="w-full bg-tm-panel overflow-hidden flex flex-col md:flex-row min-h-[143vh] relative z-10">
 
         {/* Sidebar / Info Panel */}
         <div className="w-full md:w-[35%] bg-gradient-to-br from-slate-900 to-slate-800 text-white p-8 md:p-12 flex flex-col justify-between border-r border-slate-700 relative overflow-hidden shadow-xl">
