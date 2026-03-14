@@ -26,70 +26,88 @@ export default function Home() {
       <div className="w-full bg-tm-panel overflow-hidden flex flex-col md:flex-row min-h-[143vh] relative z-10">
 
         {/* Sidebar / Info Panel */}
-        <div className="w-full md:w-[35%] bg-gradient-to-br from-slate-900 to-slate-800 text-white p-8 md:p-12 flex flex-col justify-between border-r border-slate-700 relative overflow-hidden shadow-xl">
-          {/* Decorative background element */}
-          <div className="absolute top-[-10%] left-[-10%] w-60 h-60 bg-primary/20 rounded-full blur-[80px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-60 h-60 bg-accent/20 rounded-full blur-[80px]"></div>
+        <div className="w-full md:w-[35%] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-8 md:p-12 flex flex-col justify-between border-r border-white/10 relative overflow-hidden shadow-2xl">
+          {/* Decorative background elements */}
+          <div className="absolute top-[-5%] left-[-10%] w-72 h-72 bg-indigo-500/20 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-[-5%] right-[-10%] w-72 h-72 bg-pink-500/15 rounded-full blur-[100px]"></div>
+          <div className="absolute top-[40%] left-[50%] w-40 h-40 bg-sky-500/10 rounded-full blur-[60px]"></div>
 
           <div className="relative z-10">
-            <div className="inline-block p-2 bg-white/10 rounded-xl mb-6 backdrop-blur-sm border border-white/10">
-              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1V5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1V5a1 1 0 011-1h2" />
-              </svg>
+            {/* App Badge */}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/30">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+              </div>
+              <div className="px-3 py-1 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300">InScript Tutor</span>
+              </div>
             </div>
 
-            <h1 className="text-4xl font-black mb-3 leading-tight text-white">
-              <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent italic">Hindi</span><br />
-              <span className="text-primary text-glow">Typing Master</span>
-            </h1>
+            {/* App Name */}
+            <div className="mb-10">
+              <h1 className="text-3xl font-black leading-none mb-2 whitespace-nowrap">
+                <span className="text-white/90">Hindi </span>
+                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent" style={{textShadow: 'none'}}>Typing </span>
+                <span className="text-white/90">Master</span>
+              </h1>
+              <p className="text-white/40 text-xs font-semibold mt-4 tracking-widest uppercase">
+                अभ्यास करें • सीखें • माहिर बनें
+              </p>
+            </div>
 
-            <p className="text-white/60 text-xs font-bold uppercase tracking-[0.2em] mb-10 flex items-center gap-2">
-              <span className="w-8 h-[1px] bg-white/30"></span>
-              InScript Layout Specialist
-            </p>
+            {/* Key Features - Card Style */}
+            <div className="space-y-3">
+              <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.25em] mb-4">Key Features</p>
 
-            <div className="space-y-6">
-              <div className="group transition-all duration-300">
-                <h3 className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2 px-1">Current Mastery</h3>
-                <div className="glass-card p-5 rounded-2xl border border-white/5 group-hover:border-primary/30 transition-all">
-                  <div className="flex justify-between items-end mb-2">
-                    <span className="text-sm font-bold">Newbie Mode</span>
-                    <span className="text-primary text-xs font-black">0% Done</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div className="w-[5%] h-full bg-gradient-to-r from-primary to-secondary"></div>
-                  </div>
+              <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/5 border border-green-400/20 hover:border-green-400/40 hover:bg-white/8 transition-all duration-300 group">
+                <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-green-500/20 flex-shrink-0 group-hover:bg-green-500/30 transition-all">
+                  <svg className="w-4.5 h-4.5 text-green-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <p className="text-white/90 text-sm font-bold">Unicode InScript Layout</p>
+                  <p className="text-white/40 text-[10px]">मानक हिंदी कीबोर्ड समर्थन</p>
                 </div>
               </div>
 
-              <div className="mt-8 space-y-4">
-                <h3 className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2 px-1">Key Features</h3>
-                <div className="flex items-center gap-4 text-white/80">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span className="text-sm">Unicode InScript Layout Support</span>
+              <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/5 border border-sky-400/20 hover:border-sky-400/40 hover:bg-white/8 transition-all duration-300 group">
+                <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-sky-500/20 flex-shrink-0 group-hover:bg-sky-500/30 transition-all">
+                  <svg className="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" /></svg>
                 </div>
-                <div className="flex items-center gap-4 text-white/80">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l7.859 4.331m-7.859-4.331a18.252 18.252 0 014.286 9.473m-4.286-9.473c1.954-2.234 3.737-3.953 5.405-5.526M6.47 16.035l-3.345 5.254a1.18 1.18 0 001.381 1.649l5.859-3.411m-5.859 3.411a18.252 18.252 0 01-5.859-3.411m-5.859 3.411c-2.234 1.954-3.953 3.737-5.526 5.405M17.188 2.239l-7.859 4.331m7.859-4.331a18.252 18.252 0 01-4.286 9.473m4.286-9.473c-1.954-2.234-3.737-3.953-5.405-5.526" />
-</svg>
-                  <span className="text-sm">Interactive Finger Guidance</span>
+                <div>
+                  <p className="text-white/90 text-sm font-bold">Interactive Finger Guidance</p>
+                  <p className="text-white/40 text-[10px]">उंगली मार्गदर्शन प्रणाली</p>
                 </div>
-                <div className="flex items-center gap-4 text-white/80">
+              </div>
+
+              <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/5 border border-purple-400/20 hover:border-purple-400/40 hover:bg-white/8 transition-all duration-300 group">
+                <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-purple-500/20 flex-shrink-0 group-hover:bg-purple-500/30 transition-all">
                   <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                  <span className="text-sm">Real-time WPM & Accuracy Tracking</span>
                 </div>
-                <div className="flex items-center gap-4 text-white/80">
-                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M3 13h2a2 2 0 012 2v2a2 2 0 01-2 2H3a2 2 0 01-2-2v-2a2 2 0 012-2z" /></svg>
-                  <span className="text-sm">Personalized Lesson Progression</span>
+                <div>
+                  <p className="text-white/90 text-sm font-bold">Live WPM & Accuracy</p>
+                  <p className="text-white/40 text-[10px]">रियल-टाइम प्रदर्शन ट्रैकिंग</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-white/5 border border-rose-400/20 hover:border-rose-400/40 hover:bg-white/8 transition-all duration-300 group">
+                <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-rose-500/20 flex-shrink-0 group-hover:bg-rose-500/30 transition-all">
+                  <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                </div>
+                <div>
+                  <p className="text-white/90 text-sm font-bold">Structured Lessons</p>
+                  <p className="text-white/40 text-[10px]">व्यक्तिगत पाठ प्रगति</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="relative z-10 pt-10">
+          <div className="relative z-10 pt-8">
             <Link href={`/lesson/${currentLesson.id}`} className="block w-full">
-              <button className="w-full bg-primary text-white hover:bg-primary-dark font-black py-4 px-6 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.2)] transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
+              <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-indigo-500/30 transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
                 <span className="text-base">Start Lesson {currentLessonIndex + 1}</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <span className="group-hover:translate-x-1 transition-transform text-lg">→</span>
               </button>
             </Link>
           </div>
