@@ -8,6 +8,7 @@ import { keyboardRows } from '../data/keyboardLayout';
 import VisualKeyboard from './VisualKeyboard';
 import HandsGuidance from './HandsGuidance';
 import { jsPDF } from 'jspdf';
+import { supabase } from '../lib/supabase';
 
 interface TypingTutorProps {
     lessonId: string;
@@ -67,10 +68,50 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     // Home row characters for mixing
     const homeRowCharacters = ['ो', 'ओ', 'े', 'ए', '्', 'अ', 'ि', 'इ', 'ु', 'उ', 'प', 'फ', 'र', 'ऱ', 'क', 'ख', 'त', 'थ', 'च', 'छ', 'ट', 'ठ'];
 
+    // State for Supabase Passage
+    const [supabaseParagraph, setSupabaseParagraph] = useState<string | null>(null);
+    const [isLoadingPassage, setIsLoadingPassage] = useState(false);
+
+    // Fetch Paragraph from Supabase
+    useEffect(() => {
+        if (isParagraphMode && lesson) {
+            console.log("Fetching passage for lesson ID:", lesson.id);
+            const fetchPassage = async () => {
+                setIsLoadingPassage(true);
+                try {
+                    const { data, error } = await supabase
+                        .from('paragraphs')
+                        .select('text')
+                        .eq('lesson_id', lesson.id)
+                        .single();
+                    
+                    if (error) {
+                        console.error("Supabase Error:", error.message);
+                    }
+
+                    if (data && !error && data.text) {
+                        console.log("Successfully fetched passage from Supabase");
+                        setSupabaseParagraph(data.text);
+                    } else {
+                        console.log("No passage found in Supabase or error occurred, using fallback.");
+                        setSupabaseParagraph(null);
+                    }
+                } catch (e) {
+                    console.error("Fetch Exception:", e);
+                    setSupabaseParagraph(null);
+                } finally {
+                    setIsLoadingPassage(false);
+                }
+            };
+            fetchPassage();
+        }
+    }, [isParagraphMode, lesson?.id]);
+
     // Generate typing prompt — word mode repeats each word 6x, paragraph mode uses natural text once
     const generateTypingPrompt = useCallback(() => {
-        if (isParagraphMode && lesson.paragraph) {
-            return lesson.paragraph.trim().split(/\s+/);
+        if (isParagraphMode) {
+            const textToUse = supabaseParagraph || (lesson as any).paragraphText || lesson.paragraph || "Database/Config passage not found.";
+            return textToUse.trim().split(/\s+/);
         }
         const rawWords = lesson.content.trim().split(/\s+/);
         const processed: string[] = [];
@@ -78,7 +119,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
             processed.push(word, word, word, word, word, word);
         });
         return processed;
-    }, [lesson.content, lesson.paragraph, isParagraphMode]);
+    }, [lesson.content, lesson.paragraph, isParagraphMode, supabaseParagraph, lesson]);
 
     // Reset typing prompt state on lesson change
     useEffect(() => {
@@ -113,6 +154,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     const [charIndexInWord, setCharIndexInWord] = useState(0);
     const [wordTypedHistory, setWordTypedHistory] = useState<TypedChar[]>([]);
     const [incorrectChars, setIncorrectChars] = useState<string[]>([]);
+    const [typedText, setTypedText] = useState<string>('');
 
     // Reset function for lesson restart/change
     const resetLesson = useCallback(() => {
@@ -120,6 +162,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         setCharIndexInWord(0);             // Reset character position
         setWordTypedHistory([]);           // Clear typing history
         setIncorrectChars([]);             // Clear errors
+        setTypedText('');                   // Clear paragraph typed text
         setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
         setCompleted(false);
         setStarted(false);
@@ -130,6 +173,21 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     const [isWrongKey, setIsWrongKey] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
+    const activeWordRef = useRef<HTMLSpanElement>(null);
+    const cursorRef = useRef<HTMLSpanElement>(null);
+
+    // Auto-scroll logic for paragraph practice
+    useEffect(() => {
+        if (isParagraphMode && activeWordRef.current) {
+            activeWordRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [currentWordIndex, isParagraphMode]);
+
+    useEffect(() => {
+        if (isParagraphMode && cursorRef.current) {
+            cursorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [typedText, isParagraphMode]);
 
     // Timer Logic
     useEffect(() => {
@@ -197,6 +255,48 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     };
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (isParagraphMode) {
+            if (completed || !selectedTime || !started || paused) return;
+            e.preventDefault();
+
+            if (e.key === 'Backspace') {
+                if (typedText.length > 0) {
+                    const newText = typedText.slice(0, -1);
+                    setTypedText(newText);
+                    setCurrentWordIndex(newText.split(' ').length - 1);
+                }
+                return;
+            }
+            if (['Shift', 'Control', 'Alt', 'CapsLock', 'Tab'].includes(e.key)) return;
+            const mappedChar = getCharFromKey(e.code, e.shiftKey);
+            if (mappedChar) {
+                const targetText = words.join(' ');
+                const isCorrect = mappedChar === (targetText[typedText.length] || ' ');
+                playSound(isCorrect);
+
+                if (!isCorrect && mappedChar !== ' ') {
+                    setIsWrongKey(true);
+                    setTimeout(() => setIsWrongKey(false), 150);
+                }
+
+                const newText = typedText + mappedChar;
+                setTypedText(newText);
+                setCurrentWordIndex(newText.split(' ').length - 1);
+
+                setStats(prev => ({
+                    ...prev,
+                    totalTyped: prev.totalTyped + 1,
+                    errors: isCorrect ? prev.errors : prev.errors + 1,
+                    accuracy: Math.round(((prev.totalTyped + 1 - (isCorrect ? prev.errors : prev.errors + 1)) / (prev.totalTyped + 1)) * 100)
+                }));
+
+                if (newText.length >= targetText.length) {
+                    setCompleted(true);
+                }
+            }
+            return;
+        }
+
         if (completed || !selectedTime || !started || paused) return;
         if (e.key === 'Backspace') { e.preventDefault(); return; }
         if (['Shift', 'Control', 'Alt', 'CapsLock', 'Tab'].includes(e.key)) return;
@@ -316,6 +416,185 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         doc.save(`HTM_Result_${lesson.id}.pdf`);
     };
 
+    if (isParagraphMode) {
+        return (
+            <div className="flex flex-col h-full w-full outline-none bg-slate-50 animate-fade-in" onKeyDown={handleKeyDown} tabIndex={0} onClick={() => inputRef.current?.focus()}>
+                {/* Header */}
+                <div className="text-center py-6 bg-white border-b border-slate-200">
+                    <h1 className="text-3xl md:text-4xl text-indigo-600 font-black uppercase tracking-widest">{lesson.title.split(':')[0]}</h1>
+                    <p className="text-slate-500 mt-2 text-sm">{lesson.description}</p>
+                </div>
+
+                <div className="flex flex-1 w-full gap-8 px-6 md:px-12 lg:px-16 py-8 justify-between">
+                    {/* Left Sidebar */}
+                    <div className="w-60 flex-shrink-0 flex flex-col gap-4 hidden md:flex">
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <h3 className="font-bold text-slate-700 mb-2 text-sm tracking-wide">Test Mode</h3>
+                            <div className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600">Time Mode</div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <h3 className="font-bold text-slate-700 mb-2 text-sm tracking-wide">Duration</h3>
+                            <select
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none cursor-pointer"
+                                value={selectedTime || 0}
+                                onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    setSelectedTime(val);
+                                    setTimeLeft(val);
+                                    if (val > 0) { setStarted(true); setStartTime(Date.now()); }
+                                }}
+                            >
+                                <option value={0}>Select Duration...</option>
+                                <option value={60}>1 min</option>
+                                <option value={120}>2 min</option>
+                                <option value={300}>5 min</option>
+                                <option value={600}>10 min</option>
+                            </select>
+                        </div>
+                        <div className="bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center shadow-sm">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"></path></svg> Backspace On
+                        </div>
+                        <div className="bg-slate-500 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center shadow-sm mt-3">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg> Backspace Sound
+                        </div>
+
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col gap-6 min-w-0">
+                        {/* Settings Bar above Passage */}
+                        <div className="flex justify-between items-center bg-white px-5 py-3 rounded-xl border border-slate-200">
+                            <div className="text-base font-bold text-slate-500 flex items-center gap-3 select-none">
+                                PDF Font Size:
+                                <button className="bg-slate-100 p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path></svg></button>
+                                14px
+                                <button className="bg-slate-100 p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg></button>
+                            </div>
+                            <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition-colors" onClick={(e) => { e.stopPropagation(); downloadPDF(); }}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download PDF
+                            </button>
+                        </div>
+
+                        {/* Passage Box */}
+                        <div className="bg-white border text-justify border-slate-200 rounded-2xl p-8 h-80 overflow-y-auto text-2xl leading-[2.5] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative">
+                            <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-indigo-500 rounded-r-2xl opacity-80"></div>
+                            {words.map((word, idx) => {
+                                const isCurrent = idx === currentWordIndex;
+                                const isPast = idx < currentWordIndex;
+                                return (
+                                    <span 
+                                        key={idx} 
+                                        ref={isCurrent ? activeWordRef : null}
+                                        className={`mr-3 transition-colors ${isCurrent ? 'bg-yellow-400 text-slate-900 rounded-sm' : (isPast ? 'text-slate-800' : 'text-slate-800')}`}
+                                    >
+                                        {word}
+                                    </span>
+                                );
+                            })}
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="bg-white border border-slate-200 rounded-2xl p-8 flex-1 min-h-[220px] overflow-y-auto text-2xl leading-[2.5] hindi-text shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] relative cursor-text text-justify">
+                            {(!started || !selectedTime) && <span className="text-slate-400 absolute pointer-events-none">Start typing here... Select Duration on left or right to begin.</span>}
+                            {started && selectedTime && (
+                                <>
+                                    {typedText.split('').map((char, i) => {
+                                        const targetText = words.join(' ');
+                                        const isCorrect = char === targetText[i];
+                                        return (
+                                            <span key={i} className={isCorrect ? "text-indigo-700" : "text-red-600 bg-red-100"}>
+                                                {char}
+                                            </span>
+                                        );
+                                    })}
+                                    <span ref={cursorRef} className="inline-block w-[3px] h-7 bg-slate-800 animate-[pulse_1s_ease-in-out_infinite] align-middle ml-[1px]"></span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Sidebar */}
+                    <div className="w-60 flex-shrink-0 flex flex-col gap-4 hidden lg:flex">
+                        <div className="bg-slate-50 text-slate-800 border-2 border-slate-200 rounded-xl p-4 flex items-center justify-center gap-2 text-2xl font-black shadow-sm tracking-wide">
+                            <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {formatTime(timeLeft || selectedTime || 0)}
+                        </div>
+                        <div className="bg-slate-600 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg> Live Speed & Accuracy
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mt-1 mb-1">
+                            <div className="bg-white border border-slate-200 rounded-lg p-3 text-center shadow-sm">
+                                <div className="text-xs font-bold text-slate-500 mb-1">WPM</div>
+                                <div className="text-2xl font-black text-indigo-600">{stats.wpm}</div>
+                            </div>
+                            <div className="bg-white border border-slate-200 rounded-lg p-3 text-center shadow-sm">
+                                <div className="text-xs font-bold text-slate-500 mb-1">ACC</div>
+                                <div className="text-2xl font-black text-emerald-500">{stats.accuracy}%</div>
+                            </div>
+                        </div>
+                        <div className="bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center shadow-sm">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg> Hide Passage
+                        </div>
+                        <div className="flex gap-2">
+                            <button className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg> Font</button>
+                            <button className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg> Font</button>
+                        </div>
+                        <button className="bg-white border border-slate-200 text-slate-600 shadow-sm font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center hover:bg-slate-50">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg> Sound Off
+                        </button>
+                        <button className="bg-yellow-400 text-yellow-900 font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center mt-1 shadow-sm hover:bg-yellow-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Highlight
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); resetLesson(); }} className="bg-blue-600 hover:bg-blue-700 transition-colors shadow-md text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center mt-6">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Restart
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Floating Back Button */}
+                <div className="fixed bottom-4 left-4 md:hidden">
+                    <button onClick={() => router.push('/')} className="bg-white p-3 rounded-full shadow-lg text-slate-600">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                </div>
+
+                {/* Results logic (existing) */}
+                {completed && selectedTime && (
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl flex items-center justify-center z-50 p-4 animate-fade-in">
+                        {/* ... Existing results modal content */}
+                        <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-2xl w-full text-center relative overflow-hidden">
+                            <h2 className="text-3xl font-black mb-8">Lesson Complete!</h2>
+                            <div className="grid grid-cols-3 gap-4 mb-10">
+                                <div className="bg-slate-50 p-6 rounded-3xl"><span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Time Selected</span><div className="text-2xl font-black">{selectedTime / 60} min</div></div>
+                                <div className="bg-slate-50 p-6 rounded-3xl"><span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Characters Typed</span><div className="text-2xl font-black">{stats.totalTyped}</div></div>
+                                <div className="bg-slate-50 p-6 rounded-3xl"><span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Correct Characters</span><div className="text-2xl font-black">{stats.totalTyped - stats.errors}</div></div>
+                                <div className="bg-slate-50 p-6 rounded-3xl"><span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Errors</span><div className="text-2xl font-black">{stats.errors}</div></div>
+                                <div className="bg-slate-50 p-6 rounded-3xl"><span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Accuracy</span><div className="text-2xl font-black">{stats.accuracy}%</div></div>
+                                <div className="bg-slate-50 p-6 rounded-3xl"><span className="text-[10px] font-black uppercase text-slate-400 block mb-1">WPM</span><div className="text-2xl font-black">{stats.wpm} WPM</div></div>
+                                {incorrectChars.length > 0 && (
+                                    <div className="bg-red-50 p-6 rounded-3xl border-2 border-red-200 col-span-3">
+                                        <span className="text-[10px] font-black uppercase text-red-600 block mb-2">गलत अक्षर (Incorrect Characters)</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {incorrectChars.map((char, index) => (
+                                                <span key={index} className="bg-red-100 text-red-800 px-3 py-1 rounded-lg text-lg font-bold border border-red-300">{char}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex gap-4">
+                                <button onClick={(e) => { e.stopPropagation(); resetLesson(); }} className="flex-1 bg-slate-100 py-4 rounded-2xl font-black">Try Again</button>
+                                <button onClick={() => router.push('/')} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black">Dashboard</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <input ref={inputRef} type="text" className="opacity-0 absolute" autoFocus onBlur={(e) => e.target.focus()} />
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full w-full outline-none animate-fade-in" onKeyDown={handleKeyDown} tabIndex={0}>
             {/* Stats Header (Flushed to Top) */}
@@ -409,7 +688,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                                         }
                                     })}
                                 </div>
-                                {isCurrent && (
+                                {isCurrent && !isParagraphMode && (
                                     <div className="mt-4 flex gap-1.5 animate-fade-in">
                                         {Array.from({ length: word.length }).map((_, i) => (
                                             <div key={i} className={`h-1.5 w-6 rounded-full transition-all duration-300 ${i === charIndexInWord ? 'bg-primary animate-pulse w-9' : (i < charIndexInWord ? 'bg-emerald-500/30' : 'bg-slate-200')}`}></div>
@@ -450,25 +729,27 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                 )}
             </div>
 
-            {/* Keyboard Guidance (Full Width) */}
-            <div className="glass-panel p-2 md:p-3 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-2 w-full flex-shrink-0">
-                <VisualKeyboard
-                    activeKeyId={activeKeyId}
-                    pressedKeyId={pressedKey}
-                    isShiftRequired={isShiftRequired}
-                    activeLessonId={lesson.id}
-                    lessonKeys={lesson.keys}
-                    isWrongKey={isWrongKey}
-                />
-                <div className="w-full">
-                    <HandsGuidance
-                        activeFinger={activeFinger}
+            {/* Keyboard Guidance (Full Width) - Hidden in Paragraph Mode */}
+            {!isParagraphMode && (
+                <div className="glass-panel p-2 md:p-3 rounded-none border-x-0 border-white/40 shadow-lg flex flex-col items-center gap-2 w-full flex-shrink-0 animate-fade-in">
+                    <VisualKeyboard
+                        activeKeyId={activeKeyId}
                         pressedKeyId={pressedKey}
+                        isShiftRequired={isShiftRequired}
                         activeLessonId={lesson.id}
                         lessonKeys={lesson.keys}
+                        isWrongKey={isWrongKey}
                     />
+                    <div className="w-full">
+                        <HandsGuidance
+                            activeFinger={activeFinger}
+                            pressedKeyId={pressedKey}
+                            activeLessonId={lesson.id}
+                            lessonKeys={lesson.keys}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Time Selection Modal */}
             {showTimeSelection && (
