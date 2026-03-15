@@ -478,7 +478,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         {/* Passage Box */}
                         <div className="bg-white border text-justify border-slate-200 rounded-2xl p-8 h-80 overflow-y-auto text-2xl leading-[2.5] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative">
                             <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-indigo-500 rounded-r-2xl opacity-80"></div>
-                            {words.map((word, idx) => {
+                            {words.map((word: string, idx: number) => {
                                 const isCurrent = idx === currentWordIndex;
                                 const isPast = idx < currentWordIndex;
                                 return (
@@ -666,7 +666,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                 <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
 
                 <div className="flex flex-wrap justify-center gap-6 relative z-10">
-                    {words.slice(currentWordIndex, currentWordIndex + 3).map((word, idx) => {
+                    {words.slice(currentWordIndex, currentWordIndex + 3).map((word: string, idx: number) => {
                         const isCurrent = idx === 0;
                         const currentWord = words[currentWordIndex];
                         const isSameWord = word === currentWord;
