@@ -125,64 +125,108 @@ export default function Home() {
 
         {/* All Lessons List */}
         <div className="w-full md:w-[65%] p-6 md:p-10 overflow-y-auto custom-scrollbar bg-tm-bg">
-          <div className="mb-8">
-            <h2 className="text-3xl font-black text-slate-900">Choose a Lesson</h2>
-            <p className="text-slate-500 font-medium opacity-70">Select a lesson to start your practice</p>
+          <div className="mb-4 md:mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h2 className="text-2xl md:text-4xl font-black bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-2">Choose Your Lesson</h2>
+                <p className="text-sm md:text-base text-slate-600 font-medium">Master Hindi typing step by step</p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-4">
-            {allLessons.map((lesson, index) => {
-              const isSelected = currentLessonIndex === index;
-              return (
-                <div
-                  key={lesson.id}
-                  onClick={() => setCurrentLessonIndex(index)}
-                  className={`group relative overflow-hidden flex flex-col p-6 rounded-[2rem] transition-all duration-300 cursor-pointer border-2 ${isSelected
-                      ? "bg-white border-primary shadow-[0_20px_40px_-15px_rgba(99,102,241,0.2)] scale-[1.02]"
-                      : "bg-white/50 border-slate-100 hover:border-slate-300 hover:bg-white"
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`h-24 w-24 flex items-center justify-center bg-gradient-to-br transition-all duration-500 rounded-[2rem] mr-8 shadow-lg flex-shrink-0 text-center p-4 leading-[1.1] ${isSelected ? "from-primary to-indigo-600 shadow-primary/30" : "from-slate-200 to-slate-300 shadow-slate-200 grayscale"
-                      }`}>
-                      <span className={`text-[13px] font-black uppercase tracking-tighter whitespace-pre-line ${isSelected ? "text-white" : "text-slate-600"}`}>
-                        {lesson.id.replace(/row-/g, 'row\n').replace(/-/g, ' ')}
+          {/* Single Lesson Display */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-2xl px-2 md:px-0">
+              <div
+                className="group relative overflow-hidden flex flex-col p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] transition-all duration-500 border-2 bg-gradient-to-br from-white via-indigo-50/50 to-purple-50/50 border-indigo-400 shadow-[0_25px_50px_-20px_rgba(99,102,241,0.25)] scale-[1.02] ring-4 ring-indigo-400/20"
+              >
+                {/* Decorative gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 opacity-100"></div>
+                
+                {/* Animated corner accent */}
+                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-bl-full opacity-20 scale-100"></div>
+                
+                <div className="flex flex-col md:flex-row items-center relative z-10 gap-4 md:gap-8">
+                  <div className="h-20 w-20 md:h-28 md:w-28 flex items-center justify-center bg-gradient-to-br transition-all duration-500 rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl flex-shrink-0 text-center p-3 md:p-4 leading-[1.1] transform group-hover:scale-110 group-hover:rotate-3 from-indigo-500 via-purple-500 to-pink-500 shadow-indigo-500/40 ring-4 ring-white/50">
+                    <span className="text-[10px] md:text-[12px] font-black uppercase tracking-tighter whitespace-pre-line text-white drop-shadow-lg">
+                      {currentLesson.id.replace(/row-/g, 'row\n').replace(/-/g, ' ')}
+                    </span>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg md:text-2xl font-black transition-all duration-300 text-slate-900">
+                        {currentLesson.title}
+                      </h3>
+                      <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full font-black text-xs md:text-sm transition-all duration-500 transform group-hover:scale-110 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
+                        {(currentLessonIndex + 1).toString().padStart(2, '0')}
+                      </div>
+                    </div>
+                    <p className="text-xs md:text-sm font-medium transition-all duration-300 text-slate-600">
+                      {currentLesson.description}
+                    </p>
+                    
+                    {/* Progress indicator */}
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700 w-3/4"></div>
+                      </div>
+                      <span className="text-xs font-black transition-all duration-300 text-indigo-600">
+                        75%
                       </span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className={`text-xl font-black transition-colors ${isSelected ? "text-slate-900" : "text-slate-700"}`}>
-                          {lesson.title}
-                        </h3>
-                        <span className={`text-sm font-black tracking-widest ${isSelected ? "text-primary/40" : "text-slate-300"}`}>
-                          {(index + 1).toString().padStart(2, '0')}
-                        </span>
-                      </div>
-                      <p className={`text-sm font-medium transition-colors ${isSelected ? "text-slate-500" : "text-slate-400 opacity-80"}`}>
-                        {lesson.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Row-wise Practice Buttons (Visible only when selected) */}
-                  <div className={`grid grid-cols-2 gap-4 transition-all duration-500 ease-out overflow-hidden ${isSelected ? "max-h-40 mt-8 opacity-100" : "max-h-0 mt-0 opacity-0 pointer-events-none"
-                    }`}>
-                    <Link href={`/lesson/${lesson.id}`} className="block">
-                      <button className="w-full h-full flex items-center justify-center gap-3 px-6 py-4 bg-primary hover:bg-primary-dark text-white font-black rounded-2xl text-base transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h12M4 14h8" /></svg>
-                        Word Practice
-                      </button>
-                    </Link>
-                    <Link href={`/lesson/${lesson.id}?mode=paragraph`} className="block">
-                      <button className="w-full h-full flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl text-base transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg shadow-emerald-500/20">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        {lesson.title.includes(' - ') ? lesson.title.split(' - ')[1] : lesson.title.split(': ')[1]?.replace(' Mastery', '') || 'Paragraph'} Paragraph
-                      </button>
-                    </Link>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Practice Buttons */}
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 transition-all duration-700 ease-out overflow-hidden max-h-48 mt-6 md:mt-8 opacity-100">
+                  <Link href={`/lesson/${currentLesson.id}`} className="block transform transition-all duration-300 hover:scale-105">
+                    <button className="w-full h-full flex items-center justify-center gap-3 px-4 py-3 md:px-6 md:py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-black rounded-xl md:rounded-2xl text-sm md:text-base transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 group/btn">
+                      <svg className="w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 group-hover/btn:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h12M4 14h8" /></svg>
+                      <span>Word Practice</span>
+                      <svg className="w-3 h-3 md:w-4 md:h-4 transition-transform duration-300 group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </Link>
+                  <Link href={`/lesson/${currentLesson.id}?mode=paragraph`} className="block transform transition-all duration-300 hover:scale-105">
+                    <button className="w-full h-full flex items-center justify-center gap-3 px-4 py-3 md:px-6 md:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-black rounded-xl md:rounded-2xl text-sm md:text-base transition-all duration-300 shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 group/btn">
+                      <svg className="w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 group-hover/btn:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <span className="text-xs md:text-sm">{currentLesson.title.includes(' - ') ? currentLesson.title.split(' - ')[1] : currentLesson.title.split(': ')[1]?.replace(' Mastery', '') || 'Paragraph'} Paragraph</span>
+                      <svg className="w-3 h-3 md:w-4 md:h-4 transition-transform duration-300 group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-center mt-8 relative z-20">
+            <div className="flex items-center gap-3 md:gap-6 bg-white/60 backdrop-blur-sm p-2 rounded-[1.5rem] border border-slate-200 shadow-sm">
+                <button 
+                  onClick={handlePrevLesson}
+                  disabled={currentLessonIndex === 0}
+                  className="p-3 md:px-5 md:py-3.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-400 hover:text-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="font-bold hidden sm:inline text-sm md:text-base">Previous</span>
+                </button>
+                <div className="px-4 md:px-6 py-2 md:py-3 bg-indigo-50 rounded-xl md:rounded-2xl border-2 border-indigo-100 min-w-[80px] md:min-w-[120px] text-center">
+                  <span className="text-sm md:text-base font-black text-indigo-900 tracking-wider">
+                    {(currentLessonIndex + 1).toString().padStart(2, '0')} <span className="text-indigo-300 mx-1">/</span> {allLessons.length.toString().padStart(2, '0')}
+                  </span>
+                </div>
+                <button 
+                  onClick={handleNextLesson}
+                  disabled={currentLessonIndex === allLessons.length - 1}
+                  className="p-3 md:px-6 md:py-3.5 rounded-2xl bg-indigo-600 border-2 border-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
+                >
+                  <span className="font-bold hidden sm:inline text-sm md:text-base">Next</span>
+                  <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+            </div>
           </div>
 
           <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500">

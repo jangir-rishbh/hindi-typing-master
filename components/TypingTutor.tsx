@@ -83,7 +83,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         .from('paragraphs')
                         .select('text')
                         .eq('lesson_id', lesson.id)
-                        .single();
+                        .maybeSingle();
                     
                     if (error) {
                         console.error("Supabase Error:", error.message);
@@ -148,6 +148,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     const [completed, setCompleted] = useState(false);
     const [showTimeSelection, setShowTimeSelection] = useState(false);
     const [stats, setStats] = useState({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
+    const [fontSize, setFontSize] = useState(24);
 
     // New Progression State
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -476,8 +477,11 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         </div>
 
                         {/* Passage Box */}
-                        <div className="bg-white border text-justify border-slate-200 rounded-2xl p-8 h-80 overflow-y-auto text-2xl leading-[2.5] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative">
-                            <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-indigo-500 rounded-r-2xl opacity-80"></div>
+                        <div 
+                            className="bg-white border text-justify border-slate-200 rounded-2xl p-8 h-80 overflow-y-auto leading-[1.8] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative flex flex-wrap content-start gap-x-2 gap-y-1"
+                            style={{ fontSize: `${fontSize}px` }}
+                        >
+                            <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-indigo-500 rounded-r-2xl opacity-80 z-10"></div>
                             {words.map((word: string, idx: number) => {
                                 const isCurrent = idx === currentWordIndex;
                                 const isPast = idx < currentWordIndex;
@@ -485,7 +489,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                                     <span 
                                         key={idx} 
                                         ref={isCurrent ? activeWordRef : null}
-                                        className={`mr-3 transition-colors ${isCurrent ? 'bg-yellow-400 text-slate-900 rounded-sm' : (isPast ? 'text-slate-800' : 'text-slate-800')}`}
+                                        className={`transition-colors ${isCurrent ? 'bg-yellow-400 text-slate-900 rounded-sm px-1' : (isPast ? 'text-slate-800 px-1' : 'text-slate-800 px-1')}`}
                                     >
                                         {word}
                                     </span>
@@ -494,8 +498,11 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         </div>
 
                         {/* Input Area */}
-                        <div className="bg-white border border-slate-200 rounded-2xl p-8 flex-1 min-h-[220px] overflow-y-auto text-2xl leading-[2.5] hindi-text shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] relative cursor-text text-justify">
-                            {(!started || !selectedTime) && <span className="text-slate-400 absolute pointer-events-none">Start typing here... Select Duration on left or right to begin.</span>}
+                        <div 
+                            className="bg-white border border-slate-200 rounded-2xl p-8 flex-1 min-h-[220px] overflow-y-auto leading-[1.8] hindi-text shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] relative cursor-text text-justify"
+                            style={{ fontSize: `${fontSize}px` }}
+                        >
+                            {(!started || !selectedTime) && <span className="text-slate-400 absolute pointer-events-none" style={{ fontSize: '1rem' }}>Start typing here... Select Duration on left or right to begin.</span>}
                             {started && selectedTime && (
                                 <>
                                     {typedText.split('').map((char, i) => {
@@ -536,8 +543,8 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg> Hide Passage
                         </div>
                         <div className="flex gap-2">
-                            <button className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg> Font</button>
-                            <button className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg> Font</button>
+                            <button onClick={(e) => { e.stopPropagation(); setFontSize(prev => Math.max(16, prev - 2)); }} className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg> Font -</button>
+                            <button onClick={(e) => { e.stopPropagation(); setFontSize(prev => Math.min(48, prev + 2)); }} className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg> Font +</button>
                         </div>
                         <button className="bg-white border border-slate-200 text-slate-600 shadow-sm font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center hover:bg-slate-50">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg> Sound Off
