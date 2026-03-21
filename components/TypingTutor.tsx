@@ -153,17 +153,23 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     // New Progression State
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
     const [charIndexInWord, setCharIndexInWord] = useState(0);
-    const [wordTypedHistory, setWordTypedHistory] = useState<TypedChar[]>([]);
+    const [wordTypedHistory, setWordTypedHistory] = useState<Record<number, TypedChar>>({});
     const [incorrectChars, setIncorrectChars] = useState<string[]>([]);
     const [typedText, setTypedText] = useState<string>('');
+    const [hidePassage, setHidePassage] = useState(false);
+
+    // Get lesson index for navigation back
+    const lessonIndex = lessonsConfig.findIndex(l => l.id === lessonId);
+    const backUrl = lessonIndex !== -1 ? `/?index=${lessonIndex}` : '/';
 
     // Reset function for lesson restart/change
     const resetLesson = useCallback(() => {
         setCurrentWordIndex(0);             // Reset cursor / target index
         setCharIndexInWord(0);             // Reset character position
-        setWordTypedHistory([]);           // Clear typing history
+        setWordTypedHistory({});           // Clear typing history
         setIncorrectChars([]);             // Clear errors
         setTypedText('');                   // Clear paragraph typed text
+        setHidePassage(false);              // Reset passage visibility
         setStats({ wpm: 0, accuracy: 100, errors: 0, totalTyped: 0 });
         setCompleted(false);
         setStarted(false);
@@ -172,6 +178,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     }, [selectedTime]);
     const [pressedKey, setPressedKey] = useState<string | null>(null);
     const [isWrongKey, setIsWrongKey] = useState(false);
+    const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
     const activeWordRef = useRef<HTMLSpanElement>(null);
@@ -261,39 +268,45 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
             e.preventDefault();
 
             if (e.key === 'Backspace') {
-                if (typedText.length > 0) {
-                    const newText = typedText.slice(0, -1);
-                    setTypedText(newText);
-                    setCurrentWordIndex(newText.split(' ').length - 1);
-                }
+                setTypedText(prev => {
+                    if (prev.length > 0) {
+                        const newText = prev.slice(0, -1);
+                        setCurrentWordIndex(newText.split(' ').length - 1);
+                        return newText;
+                    }
+                    return prev;
+                });
                 return;
             }
             if (['Shift', 'Control', 'Alt', 'CapsLock', 'Tab'].includes(e.key)) return;
             const mappedChar = getCharFromKey(e.code, e.shiftKey);
             if (mappedChar) {
                 const targetText = words.join(' ');
-                const isCorrect = mappedChar === (targetText[typedText.length] || ' ');
-                playSound(isCorrect);
+                
+                setTypedText(prev => {
+                    const isCorrect = mappedChar === (targetText[prev.length] || ' ');
+                    playSound(isCorrect);
 
-                if (!isCorrect && mappedChar !== ' ') {
-                    setIsWrongKey(true);
-                    setTimeout(() => setIsWrongKey(false), 150);
-                }
+                    if (!isCorrect && mappedChar !== ' ') {
+                        setIsWrongKey(true);
+                        setTimeout(() => setIsWrongKey(false), 150);
+                    }
 
-                const newText = typedText + mappedChar;
-                setTypedText(newText);
-                setCurrentWordIndex(newText.split(' ').length - 1);
+                    const newText = prev + mappedChar;
+                    setCurrentWordIndex(newText.split(' ').length - 1);
 
-                setStats(prev => ({
-                    ...prev,
-                    totalTyped: prev.totalTyped + 1,
-                    errors: isCorrect ? prev.errors : prev.errors + 1,
-                    accuracy: Math.round(((prev.totalTyped + 1 - (isCorrect ? prev.errors : prev.errors + 1)) / (prev.totalTyped + 1)) * 100)
-                }));
+                    setStats(prevStats => ({
+                        ...prevStats,
+                        totalTyped: prevStats.totalTyped + 1,
+                        errors: isCorrect ? prevStats.errors : prevStats.errors + 1,
+                        accuracy: Math.round(((prevStats.totalTyped + 1 - (isCorrect ? prevStats.errors : prevStats.errors + 1)) / (prevStats.totalTyped + 1)) * 100)
+                    }));
 
-                if (newText.length >= targetText.length) {
-                    setCompleted(true);
-                }
+                    if (newText.length >= targetText.length) {
+                        setCompleted(true);
+                    }
+                    return newText;
+                });
             }
             return;
         }
@@ -324,7 +337,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         // Validation & Progress
         if (charIndexInWord < currentWord.length) {
             // Typing characters of the word
-            setWordTypedHistory(prev => [...prev, { char: mappedChar, isCorrect }]);
+            setWordTypedHistory(prev => ({ ...prev, [charIndexInWord]: { char: mappedChar, isCorrect } }));
 
             // Play sound feedback
             playSound(isCorrect);
@@ -351,12 +364,12 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
             } else {
                 setCurrentWordIndex(prev => prev + 1);
                 setCharIndexInWord(0);
-                setWordTypedHistory([]);
+                setWordTypedHistory({});
             }
             setStats(prev => ({ ...prev, totalTyped: prev.totalTyped + 1 }));
         }
 
-    }, [currentWordIndex, charIndexInWord, words, completed, started, paused]);
+    }, [currentWordIndex, charIndexInWord, words, completed, started, paused, selectedTime, isParagraphMode]);
 
     // Active Guidance
     const currentWord = words[currentWordIndex] || '';
@@ -419,16 +432,62 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
 
     if (isParagraphMode) {
         return (
-            <div className="flex flex-col h-full w-full outline-none bg-slate-50 animate-fade-in" onKeyDown={handleKeyDown} tabIndex={0} onClick={() => inputRef.current?.focus()}>
-                {/* Header */}
-                <div className="text-center py-6 bg-white border-b border-slate-200">
-                    <h1 className="text-3xl md:text-4xl text-indigo-600 font-black uppercase tracking-widest">{lesson.title.split(':')[0]}</h1>
-                    <p className="text-slate-500 mt-2 text-sm">{lesson.description}</p>
+            <div className="flex flex-col h-full w-full outline-none bg-slate-50 animate-fade-in relative transition-all duration-300" onKeyDown={handleKeyDown} tabIndex={0} onClick={() => inputRef.current?.focus()}>
+                {/* Desktop Back Button */}
+                <div className="fixed top-6 left-6 hidden md:block z-50">
+                    <button 
+                        onClick={() => router.push(backUrl)} 
+                        className="bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-xl text-slate-600 border border-white hover:text-indigo-600 hover:scale-110 transition-all active:scale-95 group"
+                        title="Back to Dashboard"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                </div>
+                {/* Header - Sticky on Mobile */}
+                <div className="bg-white border-b border-slate-200 px-4 py-3 md:py-6 sticky top-0 z-30 shadow-sm md:shadow-none">
+                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-4">
+                        <div className="text-center md:text-left hidden md:block">
+                            <h1 className="text-2xl md:text-4xl text-indigo-600 font-black uppercase tracking-widest leading-none">{lesson.title.split(':')[0]}</h1>
+                            <p className="text-slate-500 mt-1 text-xs md:text-sm">{lesson.description}</p>
+                        </div>
+
+                        {/* Mobile Optimized Stats Bar */}
+                        <div className="flex gap-2 w-full md:w-auto justify-between md:justify-center items-center">
+                            <div className="md:hidden flex flex-col min-w-0 flex-1">
+                                <h2 className="text-base font-black text-indigo-600 uppercase tracking-tighter truncate leading-tight shadow-sm md:shadow-none bg-indigo-50/30 px-2 py-1 rounded-lg">
+                                    {lesson.title.split(':')[0]}
+                                </h2>
+                            </div>
+                            <div className="flex gap-1.5 md:gap-3 flex-shrink-0">
+                                <div className="bg-slate-900 px-3 py-1.5 md:py-2 rounded-xl flex flex-col items-center min-w-[65px] md:min-w-[80px] shadow-lg">
+                                    <span className="text-[7px] md:text-[8px] font-black uppercase text-white/50">Time</span>
+                                    <span className="text-xs md:text-base font-black text-white">{formatTime(timeLeft || selectedTime || 0)}</span>
+                                </div>
+                                <div className="bg-white border-2 border-indigo-500 px-3 py-1.5 md:py-2 rounded-xl flex flex-col items-center min-w-[65px] md:min-w-[80px] shadow-sm">
+                                    <span className="text-[7px] md:text-[8px] font-black uppercase text-indigo-400">WPM</span>
+                                    <span className="text-xs md:text-base font-black text-indigo-600">{stats.wpm}</span>
+                                </div>
+                                <div className="bg-white border-2 border-green-600 px-3 py-1.5 md:py-2 rounded-xl flex flex-col items-center min-w-[65px] md:min-w-[80px] shadow-sm">
+                                    <span className="text-[7px] md:text-[8px] font-black uppercase text-green-500">ACC</span>
+                                    <span className="text-xs md:text-base font-black text-green-600">{stats.accuracy}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex flex-1 w-full gap-8 px-6 md:px-12 lg:px-16 py-8 justify-between">
+                <div className="flex flex-1 w-full gap-8 px-4 md:px-12 lg:px-16 py-6 md:py-8 justify-between relative">
                     {/* Left Sidebar */}
-                    <div className="w-60 flex-shrink-0 flex flex-col gap-4 hidden md:flex">
+                    <div className={`
+                        w-60 flex-shrink-0 flex flex-col gap-4 
+                        ${showMobileSidebar ? 'fixed inset-y-0 left-0 z-40 bg-white p-6 shadow-2xl translate-x-0' : 'hidden md:flex translate-x-[-100%] md:translate-x-0'}
+                        transition-transform duration-300 ease-in-out
+                    `}>
+                        {showMobileSidebar && (
+                            <button className="self-end p-2 text-slate-400 md:hidden" onClick={(e) => { e.stopPropagation(); setShowMobileSidebar(false); }}>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        )}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                             <h3 className="font-bold text-slate-700 mb-2 text-sm tracking-wide">Test Mode</h3>
                             <div className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600">Time Mode</div>
@@ -478,10 +537,27 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
 
                         {/* Passage Box */}
                         <div 
-                            className="bg-white border text-justify border-slate-200 rounded-2xl p-8 h-80 overflow-y-auto leading-[1.8] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative flex flex-wrap content-start gap-x-2 gap-y-1"
+                            className="bg-white border text-justify border-slate-200 rounded-2xl p-4 md:p-8 h-60 md:h-80 overflow-y-auto leading-[1.5] md:leading-[1.8] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative flex flex-wrap content-start gap-x-2 gap-y-1"
                             style={{ fontSize: `${fontSize}px` }}
                         >
                             <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-indigo-500 rounded-r-2xl opacity-80 z-10"></div>
+                            
+                            {hidePassage ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 backdrop-blur-md z-20 p-6 text-center">
+                                    <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-xl">
+                                        <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                                    </div>
+                                    <h4 className="text-slate-900 font-black text-lg mb-1 uppercase tracking-tighter">Passage Is Hidden</h4>
+                                    <p className="text-slate-500 text-xs font-medium max-w-[200px]">Focus on your muscle memory and keep typing!</p>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); setHidePassage(false); }}
+                                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-200 active:scale-95"
+                                    >
+                                        Show Now
+                                    </button>
+                                </div>
+                            ) : null}
+
                             {words.map((word: string, idx: number) => {
                                 const isCurrent = idx === currentWordIndex;
                                 const isPast = idx < currentWordIndex;
@@ -498,50 +574,69 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         </div>
 
                         {/* Input Area */}
-                        <div 
-                            className="bg-white border border-slate-200 rounded-2xl p-8 flex-1 min-h-[220px] overflow-y-auto leading-[1.8] hindi-text shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] relative cursor-text text-justify"
-                            style={{ fontSize: `${fontSize}px` }}
-                        >
-                            {(!started || !selectedTime) && <span className="text-slate-400 absolute pointer-events-none" style={{ fontSize: '1rem' }}>Start typing here... Select Duration on left or right to begin.</span>}
-                            {started && selectedTime && (
-                                <>
-                                    {typedText.split('').map((char, i) => {
-                                        const targetText = words.join(' ');
-                                        const isCorrect = char === targetText[i];
-                                        return (
-                                            <span key={i} className={isCorrect ? "text-indigo-700" : "text-red-600 bg-red-100"}>
-                                                {char}
-                                            </span>
-                                        );
-                                    })}
-                                    <span ref={cursorRef} className="inline-block w-[3px] h-7 bg-slate-800 animate-[pulse_1s_ease-in-out_infinite] align-middle ml-[1px]"></span>
-                                </>
-                            )}
+                        <div className="flex-1 flex flex-col p-1 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 relative shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 blur opacity-75 animate-pulse rounded-2xl"></div>
+                            <div 
+                                className="bg-white border-0 rounded-[14px] p-4 md:p-8 flex-1 min-h-[180px] md:min-h-[220px] overflow-y-auto leading-[1.5] md:leading-[1.8] hindi-text relative cursor-text text-justify z-10"
+                                style={{ fontSize: `${fontSize}px` }}
+                            >
+                                {(!started || !selectedTime) && <span className="text-slate-400 absolute pointer-events-none" style={{ fontSize: '1rem' }}>Start typing here... Select Duration on left or right to begin.</span>}
+                                {started && selectedTime && (
+                                    <>
+                                        {typedText.split('').map((char, i) => {
+                                            const targetText = words.join(' ');
+                                            const isCorrect = char === targetText[i];
+                                            return (
+                                                <span key={i} className={isCorrect ? "text-indigo-700" : "text-red-600 bg-red-100"}>
+                                                    {char}
+                                                </span>
+                                            );
+                                        })}
+                                        <span ref={cursorRef} className="inline-block w-[3px] h-7 bg-slate-800 animate-[pulse_1s_ease-in-out_infinite] align-middle ml-[1px]"></span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     {/* Right Sidebar */}
-                    <div className="w-60 flex-shrink-0 flex flex-col gap-4 hidden lg:flex">
+                    <div className={`
+                        w-60 flex-shrink-0 flex flex-col gap-4
+                        ${showMobileSidebar ? 'fixed inset-y-0 right-0 z-40 bg-white p-6 shadow-2xl translate-x-0' : 'hidden lg:flex translate-x-[100%] lg:translate-x-0'}
+                        transition-transform duration-300 ease-in-out
+                    `}>
+                        {showMobileSidebar && (
+                            <button className="self-start p-2 text-slate-400 lg:hidden" onClick={(e) => { e.stopPropagation(); setShowMobileSidebar(false); }}>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        )}
                         <div className="bg-slate-50 text-slate-800 border-2 border-slate-200 rounded-xl p-4 flex items-center justify-center gap-2 text-2xl font-black shadow-sm tracking-wide">
                             <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             {formatTime(timeLeft || selectedTime || 0)}
                         </div>
-                        <div className="bg-slate-600 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm">
+                        <div className="bg-green-600 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg> Live Speed & Accuracy
                         </div>
-                        <div className="grid grid-cols-2 gap-3 mt-1 mb-1">
-                            <div className="bg-white border border-slate-200 rounded-lg p-3 text-center shadow-sm">
+                        <div className="grid grid-cols-2 gap-3 mt-1 mb-1 md:flex md:flex-col lg:grid lg:grid-cols-2 lg:gap-3">
+                            {/* These cards are primarily for larger screens now, as mobile has them in the header */}
+                            <div className="bg-white border border-slate-200 rounded-lg p-3 text-center shadow-sm hidden md:block">
                                 <div className="text-xs font-bold text-slate-500 mb-1">WPM</div>
                                 <div className="text-2xl font-black text-indigo-600">{stats.wpm}</div>
                             </div>
-                            <div className="bg-white border border-slate-200 rounded-lg p-3 text-center shadow-sm">
+                            <div className="bg-white border border-slate-200 rounded-lg p-3 text-center shadow-sm hidden md:block">
                                 <div className="text-xs font-bold text-slate-500 mb-1">ACC</div>
-                                <div className="text-2xl font-black text-emerald-500">{stats.accuracy}%</div>
+                                <div className="text-2xl font-black text-green-600">{stats.accuracy}%</div>
                             </div>
                         </div>
-                        <div className="bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center shadow-sm">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg> Hide Passage
-                        </div>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setHidePassage(!hidePassage); }}
+                            className={`${hidePassage ? 'bg-indigo-600' : 'bg-green-600'} text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center shadow-sm transition-all active:scale-95 hover:brightness-110`}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={hidePassage ? "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" : "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"}></path>
+                            </svg> 
+                            {hidePassage ? 'Show Passage' : 'Hide Passage'}
+                        </button>
                         <div className="flex gap-2">
                             <button onClick={(e) => { e.stopPropagation(); setFontSize(prev => Math.max(16, prev - 2)); }} className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg> Font -</button>
                             <button onClick={(e) => { e.stopPropagation(); setFontSize(prev => Math.min(48, prev + 2)); }} className="flex-1 bg-white border border-slate-200 shadow-sm font-bold py-2.5 px-3 rounded-lg text-sm text-slate-600 flex items-center justify-center gap-1 hover:bg-slate-50"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg> Font +</button>
@@ -558,12 +653,35 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                     </div>
                 </div>
 
-                {/* Mobile Floating Back Button */}
-                <div className="fixed bottom-4 left-4 md:hidden">
-                    <button onClick={() => router.push('/')} className="bg-white p-3 rounded-full shadow-lg text-slate-600">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                {/* Mobile Floating Controls */}
+                <div className="fixed bottom-6 right-6 flex flex-col gap-3 md:hidden z-50">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setShowMobileSidebar(!showMobileSidebar); }}
+                        className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center"
+                        title="Toggle Stats & Settings"
+                    >
+                        {showMobileSidebar ? (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        ) : (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                        )}
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); resetLesson(); }} className="bg-red-500 text-white p-4 rounded-full shadow-2xl hover:bg-red-600 transition-all active:scale-95 flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     </button>
                 </div>
+
+                {/* Mobile Floating Back Button */}
+                <div className="fixed bottom-6 left-6 md:hidden z-50">
+                    <button onClick={() => router.push(backUrl)} className="bg-white p-4 rounded-full shadow-2xl text-slate-600 border border-slate-100 active:scale-95">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                </div>
+
+                {/* Backdrop for mobile sidebar */}
+                {showMobileSidebar && (
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 md:hidden" onClick={() => setShowMobileSidebar(false)}></div>
+                )}
 
                 {/* Results logic (existing) */}
                 {completed && selectedTime && (
@@ -591,7 +709,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                             </div>
                             <div className="flex gap-4">
                                 <button onClick={(e) => { e.stopPropagation(); resetLesson(); }} className="flex-1 bg-slate-100 py-4 rounded-2xl font-black">Try Again</button>
-                                <button onClick={() => router.push('/')} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black">Dashboard</button>
+                                <button onClick={() => router.push(backUrl)} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black">Dashboard</button>
                             </div>
                         </div>
                     </div>
@@ -603,17 +721,32 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
     }
 
     return (
-        <div className="flex flex-col h-full w-full outline-none animate-fade-in" onKeyDown={handleKeyDown} tabIndex={0}>
-            {/* Stats Header (Flushed to Top) */}
-            <div className="glass-panel p-1 rounded-none border-x-0 border-t-0 border-white/20 shadow-lg flex flex-wrap justify-between items-center gap-2 w-full flex-shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-xl shadow-md border border-white/10">
+        <div className="flex flex-col h-full w-full outline-none animate-fade-in relative transition-all duration-300" onKeyDown={handleKeyDown} tabIndex={0}>
+            {/* Desktop Back Button */}
+            <div className="fixed top-6 left-6 hidden md:block z-50">
+                <button 
+                    onClick={() => router.push(backUrl)} 
+                    className="bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-xl text-slate-600 border border-white hover:text-indigo-600 hover:scale-110 transition-all active:scale-95 group"
+                    title="Back to Dashboard"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </button>
+            </div>
+            {/* Stats Header (Sticky on Mobile) */}
+            <div className="glass-panel p-1 md:p-2 rounded-none border-x-0 border-t-0 border-white/20 shadow-lg flex flex-wrap justify-between items-center gap-2 w-full flex-shrink-0 sticky top-0 z-30 backdrop-blur-md bg-white/80">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <button onClick={() => router.push(backUrl)} className="p-2 bg-slate-100 rounded-xl md:hidden text-slate-600 active:scale-95">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    </button>
+                    <div className="p-2 bg-slate-900 rounded-xl shadow-md border border-white/10 hidden md:block">
                         <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                     </div>
                     <div>
-                        <h1 className="text-lg font-black bg-slate-900 bg-clip-text text-transparent">{lesson.title}</h1>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">{lesson.description}</span>
+                        <h1 className="text-base md:text-lg font-black bg-slate-900 bg-clip-text text-transparent leading-none">
+                            {lesson.title}
+                        </h1>
+                        <div className="flex items-center gap-2 md:mt-1">
+                            <span className="text-[7px] md:text-[9px] font-black text-primary uppercase tracking-[0.2em]">{lesson.description}</span>
                         </div>
                     </div>
                 </div>
@@ -631,7 +764,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                     </div>
                     <div className="glass-card min-w-[80px] p-1.5 px-3 rounded-xl flex flex-col items-center border border-slate-200">
                         <span className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Accuracy</span>
-                        <span className="text-base font-black text-secondary">{stats.accuracy}%</span>
+                        <span className="text-base font-black text-green-600">{stats.accuracy}%</span>
                     </div>
                     {started ? (
                         <button
@@ -819,7 +952,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                             </div>
                             <div className="bg-slate-50 p-6 rounded-3xl">
                                 <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Accuracy</span>
-                                <div className="text-2xl font-black">{stats.accuracy}%</div>
+                                <div className="text-2xl font-black text-green-600">{stats.accuracy}%</div>
                             </div>
                             <div className="bg-slate-50 p-6 rounded-3xl">
                                 <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">WPM / CPM</span>
@@ -849,7 +982,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                             >
                                 Try Again
                             </button>
-                            <button onClick={() => router.push('/')} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black">Dashboard</button>
+                            <button onClick={() => router.push(backUrl)} className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black">Dashboard</button>
                         </div>
                     </div>
                 </div>

@@ -1,24 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { lessonsConfig, getAllLessons } from '../data/lessonsConfig';
 
-export default function Home() {
+function HomeContent() {
   const allLessons = getAllLessons();
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
-  const currentLesson = allLessons[currentLessonIndex];
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Initialize from URL search param if available
+  const initialIndex = parseInt(searchParams.get('index') || '0', 10);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(initialIndex);
+  
+  // Update state if URL param changes
+  useEffect(() => {
+    const urlIndex = parseInt(searchParams.get('index') || '0', 10);
+    if (urlIndex !== currentLessonIndex && urlIndex >= 0 && urlIndex < allLessons.length) {
+      setCurrentLessonIndex(urlIndex);
+    }
+  }, [searchParams, allLessons.length]);
+
+  const currentLesson = allLessons[currentLessonIndex] || allLessons[0];
   const totalLessons = allLessons.length;
+
+  const updateUrlIndex = (index: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('index', index.toString());
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   const handleNextLesson = () => {
     if (currentLessonIndex < totalLessons - 1) {
-      setCurrentLessonIndex(currentLessonIndex + 1);
+      const newIndex = currentLessonIndex + 1;
+      setCurrentLessonIndex(newIndex);
+      updateUrlIndex(newIndex);
     }
   };
 
   const handlePrevLesson = () => {
     if (currentLessonIndex > 0) {
-      setCurrentLessonIndex(currentLessonIndex - 1);
+      const newIndex = currentLessonIndex - 1;
+      setCurrentLessonIndex(newIndex);
+      updateUrlIndex(newIndex);
     }
   };
   return (
@@ -240,6 +265,14 @@ export default function Home() {
 
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-900 text-white font-black text-2xl animate-pulse">LOADING LESSONS...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
 
