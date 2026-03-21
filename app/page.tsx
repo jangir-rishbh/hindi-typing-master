@@ -9,11 +9,11 @@ function HomeContent() {
   const allLessons = getAllLessons();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Initialize from URL search param if available
   const initialIndex = parseInt(searchParams.get('index') || '0', 10);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(initialIndex);
-  
+
   // Update state if URL param changes
   useEffect(() => {
     const urlIndex = parseInt(searchParams.get('index') || '0', 10);
@@ -47,11 +47,11 @@ function HomeContent() {
     }
   };
   return (
-    <main className="min-h-[143vh] flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-x-hidden">
-      <div className="w-full bg-tm-panel overflow-hidden flex flex-col md:flex-row min-h-[143vh] relative z-10">
+    <main className="h-full md:h-full flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-y-auto md:overflow-hidden scrollbar-hide">
+      <div className="w-full bg-tm-panel flex flex-col md:flex-row min-h-screen md:h-full relative z-10 overflow-y-auto md:overflow-hidden scrollbar-hide">
 
         {/* Sidebar / Info Panel */}
-        <div className="w-full md:w-[35%] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-8 md:p-12 flex flex-col justify-between border-r border-white/10 relative overflow-hidden shadow-2xl">
+        <div className="w-full md:w-[35%] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-8 md:p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 relative overflow-visible md:overflow-y-auto shadow-2xl h-auto md:h-full">
           {/* Decorative background elements */}
           <div className="absolute top-[-5%] left-[-10%] w-72 h-72 bg-indigo-500/20 rounded-full blur-[100px]"></div>
           <div className="absolute bottom-[-5%] right-[-10%] w-72 h-72 bg-pink-500/15 rounded-full blur-[100px]"></div>
@@ -128,49 +128,39 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="relative z-10 pt-8 flex flex-col gap-3">
-            <Link href={`/lesson/${currentLesson.id}`} className="block w-full">
-              <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-500/30 transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h12M4 14h8" /></svg>
-                <span className="text-sm">Word Practice</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </button>
-            </Link>
-            <Link href={`/lesson/${currentLesson.id}?mode=paragraph`} className="block w-full">
-              <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-500/30 transform transition-all duration-300 active:scale-[0.98] group flex items-center justify-center gap-3">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                <span className="text-sm">
-                  {currentLesson.title.includes(' - ') ? currentLesson.title.split(' - ')[1] : currentLesson.title.split(': ')[1]?.replace(' Mastery', '') || 'Paragraph'} Paragraph
-                </span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </button>
-            </Link>
-          </div>
         </div>
 
         {/* All Lessons List */}
-        <div className="w-full md:w-[65%] p-6 md:p-10 overflow-y-auto custom-scrollbar bg-tm-bg">
+        <div className="w-full md:w-[65%] p-6 md:p-10 overflow-visible md:overflow-y-auto custom-scrollbar bg-tm-bg h-auto md:h-full">
           <div className="mb-4 md:mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-2xl md:text-4xl font-black bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent mb-2">Choose Your Lesson</h2>
                 <p className="text-sm md:text-base text-slate-600 font-medium">Master Hindi typing step by step</p>
               </div>
+              <div className="flex items-center gap-3 px-4 py-2 bg-indigo-50/50 backdrop-blur-sm rounded-2xl border border-indigo-100/50 shadow-sm self-start md:self-center">
+                <span className="text-xs font-black text-indigo-400 uppercase tracking-widest mr-1">Lesson</span>
+                <span className="text-xl font-black text-indigo-900 tracking-tighter">
+                  {(currentLessonIndex + 1).toString().padStart(2, '0')}
+                  <span className="text-indigo-300 mx-1.5 font-light">/</span>
+                  <span className="text-indigo-400">{allLessons.length.toString().padStart(2, '0')}</span>
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Single Lesson Display */}
           <div className="flex justify-center">
-            <div className="w-full max-w-2xl px-2 md:px-0">
+            <div className="w-full max-w-5xl px-2 md:px-0">
               <div
                 className="group relative overflow-hidden flex flex-col p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] transition-all duration-500 border-2 bg-gradient-to-br from-white via-indigo-50/50 to-purple-50/50 border-indigo-400 shadow-[0_25px_50px_-20px_rgba(99,102,241,0.25)] scale-[1.02] ring-4 ring-indigo-400/20"
               >
                 {/* Decorative gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 opacity-100"></div>
-                
+
                 {/* Animated corner accent */}
                 <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-bl-full opacity-20 scale-100"></div>
-                
+
                 <div className="flex flex-col md:flex-row items-center relative z-10 gap-4 md:gap-8">
                   <div className="h-20 w-20 md:h-28 md:w-28 flex items-center justify-center bg-gradient-to-br transition-all duration-500 rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl flex-shrink-0 text-center p-3 md:p-4 leading-[1.1] transform group-hover:scale-110 group-hover:rotate-3 from-indigo-500 via-purple-500 to-pink-500 shadow-indigo-500/40 ring-4 ring-white/50">
                     <span className="text-[10px] md:text-[12px] font-black uppercase tracking-tighter whitespace-pre-line text-white drop-shadow-lg">
@@ -189,7 +179,7 @@ function HomeContent() {
                     <p className="text-xs md:text-sm font-medium transition-all duration-300 text-slate-600">
                       {currentLesson.description}
                     </p>
-                    
+
                     {/* Progress indicator */}
                     <div className="mt-3 flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -225,32 +215,27 @@ function HomeContent() {
 
           {/* Pagination Controls */}
           <div className="flex justify-center mt-8 relative z-20">
-            <div className="flex items-center gap-3 md:gap-6 bg-white/60 backdrop-blur-sm p-2 rounded-[1.5rem] border border-slate-200 shadow-sm">
-                <button 
-                  onClick={handlePrevLesson}
-                  disabled={currentLessonIndex === 0}
-                  className="p-3 md:px-5 md:py-3.5 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-400 hover:text-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span className="font-bold hidden sm:inline text-sm md:text-base">Previous</span>
-                </button>
-                <div className="px-4 md:px-6 py-2 md:py-3 bg-indigo-50 rounded-xl md:rounded-2xl border-2 border-indigo-100 min-w-[80px] md:min-w-[120px] text-center">
-                  <span className="text-sm md:text-base font-black text-indigo-900 tracking-wider">
-                    {(currentLessonIndex + 1).toString().padStart(2, '0')} <span className="text-indigo-300 mx-1">/</span> {allLessons.length.toString().padStart(2, '0')}
-                  </span>
-                </div>
-                <button 
-                  onClick={handleNextLesson}
-                  disabled={currentLessonIndex === allLessons.length - 1}
-                  className="p-3 md:px-6 md:py-3.5 rounded-2xl bg-indigo-600 border-2 border-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
-                >
-                  <span className="font-bold hidden sm:inline text-sm md:text-base">Next</span>
-                  <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+            <div className="flex items-center justify-between w-full max-w-5xl px-4 md:px-0">
+              <button
+                onClick={handlePrevLesson}
+                disabled={currentLessonIndex === 0}
+                className="px-5 py-3 md:px-8 md:py-4 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-400 hover:text-indigo-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2 shadow-sm"
+              >
+                <svg className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-bold text-sm md:text-base">Previous</span>
+              </button>
+              <button
+                onClick={handleNextLesson}
+                disabled={currentLessonIndex === allLessons.length - 1}
+                className="px-6 py-3 md:px-10 md:py-4 rounded-2xl bg-indigo-600 border-2 border-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
+              >
+                <span className="font-bold text-sm md:text-base">Next</span>
+                <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
 

@@ -84,7 +84,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         .select('text')
                         .eq('lesson_id', lesson.id)
                         .maybeSingle();
-                    
+
                     if (error) {
                         console.error("Supabase Error:", error.message);
                     }
@@ -282,7 +282,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
             const mappedChar = getCharFromKey(e.code, e.shiftKey);
             if (mappedChar) {
                 const targetText = words.join(' ');
-                
+
                 setTypedText(prev => {
                     const isCorrect = mappedChar === (targetText[prev.length] || ' ');
                     playSound(isCorrect);
@@ -435,8 +435,8 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
             <div className="flex flex-col h-full w-full outline-none bg-slate-50 animate-fade-in relative transition-all duration-300" onKeyDown={handleKeyDown} tabIndex={0} onClick={() => inputRef.current?.focus()}>
                 {/* Desktop Back Button */}
                 <div className="fixed top-6 left-6 hidden md:block z-50">
-                    <button 
-                        onClick={() => router.push(backUrl)} 
+                    <button
+                        onClick={() => router.push(backUrl)}
                         className="bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-xl text-slate-600 border border-white hover:text-indigo-600 hover:scale-110 transition-all active:scale-95 group"
                         title="Back to Dashboard"
                     >
@@ -536,12 +536,12 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         </div>
 
                         {/* Passage Box */}
-                        <div 
+                        <div
                             className="bg-white border text-justify border-slate-200 rounded-2xl p-4 md:p-8 h-60 md:h-80 overflow-y-auto leading-[1.5] md:leading-[1.8] hindi-text shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] rounded-r-none relative flex flex-wrap content-start gap-x-2 gap-y-1"
                             style={{ fontSize: `${fontSize}px` }}
                         >
                             <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-indigo-500 rounded-r-2xl opacity-80 z-10"></div>
-                            
+
                             {hidePassage ? (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/95 backdrop-blur-md z-20 p-6 text-center">
                                     <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-xl">
@@ -549,7 +549,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                                     </div>
                                     <h4 className="text-slate-900 font-black text-lg mb-1 uppercase tracking-tighter">Passage Is Hidden</h4>
                                     <p className="text-slate-500 text-xs font-medium max-w-[200px]">Focus on your muscle memory and keep typing!</p>
-                                    <button 
+                                    <button
                                         onClick={(e) => { e.stopPropagation(); setHidePassage(false); }}
                                         className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-200 active:scale-95"
                                     >
@@ -562,8 +562,8 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                                 const isCurrent = idx === currentWordIndex;
                                 const isPast = idx < currentWordIndex;
                                 return (
-                                    <span 
-                                        key={idx} 
+                                    <span
+                                        key={idx}
                                         ref={isCurrent ? activeWordRef : null}
                                         className={`transition-colors ${isCurrent ? 'bg-yellow-400 text-slate-900 rounded-sm px-1' : (isPast ? 'text-slate-800 px-1' : 'text-slate-800 px-1')}`}
                                     >
@@ -576,7 +576,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                         {/* Input Area */}
                         <div className="flex-1 flex flex-col p-1 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 relative shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                             <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 blur opacity-75 animate-pulse rounded-2xl"></div>
-                            <div 
+                            <div
                                 className="bg-white border-0 rounded-[14px] p-4 md:p-8 flex-1 min-h-[180px] md:min-h-[220px] overflow-y-auto leading-[1.5] md:leading-[1.8] hindi-text relative cursor-text text-justify z-10"
                                 style={{ fontSize: `${fontSize}px` }}
                             >
@@ -628,13 +628,13 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
                                 <div className="text-2xl font-black text-green-600">{stats.accuracy}%</div>
                             </div>
                         </div>
-                        <button 
+                        <button
                             onClick={(e) => { e.stopPropagation(); setHidePassage(!hidePassage); }}
                             className={`${hidePassage ? 'bg-indigo-600' : 'bg-green-600'} text-white font-bold py-3 px-4 rounded-lg text-sm flex items-center gap-2 justify-center shadow-sm transition-all active:scale-95 hover:brightness-110`}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={hidePassage ? "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" : "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"}></path>
-                            </svg> 
+                            </svg>
                             {hidePassage ? 'Show Passage' : 'Hide Passage'}
                         </button>
                         <div className="flex gap-2">
@@ -655,7 +655,7 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
 
                 {/* Mobile Floating Controls */}
                 <div className="fixed bottom-6 right-6 flex flex-col gap-3 md:hidden z-50">
-                    <button 
+                    <button
                         onClick={(e) => { e.stopPropagation(); setShowMobileSidebar(!showMobileSidebar); }}
                         className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center"
                         title="Toggle Stats & Settings"
@@ -724,8 +724,8 @@ export default function TypingTutor({ lessonId }: TypingTutorProps) {
         <div className="flex flex-col h-full w-full outline-none animate-fade-in relative transition-all duration-300" onKeyDown={handleKeyDown} tabIndex={0}>
             {/* Desktop Back Button */}
             <div className="fixed top-6 left-6 hidden md:block z-50">
-                <button 
-                    onClick={() => router.push(backUrl)} 
+                <button
+                    onClick={() => router.push(backUrl)}
                     className="bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-xl text-slate-600 border border-white hover:text-indigo-600 hover:scale-110 transition-all active:scale-95 group"
                     title="Back to Dashboard"
                 >

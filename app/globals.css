@@ -30,11 +30,21 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
 }
 
-html, body {
+*::-webkit-scrollbar {
+  display: none !important;
+}
+
+html,
+body {
   width: 100%;
-  overflow-x: hidden;
+  height: 100%;
+  overflow: hidden !important;
   scroll-behavior: smooth;
 }
 
@@ -42,8 +52,10 @@ html, body {
 html {
   transform: scale(0.7);
   transform-origin: 0 0;
-  width: 143%; /* 100 / 0.7 */
-  height: 143%; /* 100 / 0.7 */
+  width: 143%;
+  /* 100 / 0.7 */
+  height: 143%;
+  /* 100 / 0.7 */
 }
 
 body {
@@ -57,7 +69,7 @@ body {
     radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
     radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
   background-attachment: fixed;
-  min-height: 143vh;
+  height: 100%;
 }
 
 /* Force Hindi font on everything that can contain text */

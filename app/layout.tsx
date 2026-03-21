@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
+import ClientProtection from '../components/ClientProtection';
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
   subsets: ["devanagari"],
@@ -25,7 +26,8 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
-      <body className="antialiased min-h-[143vh] font-sans">
+      <body className="antialiased h-full font-sans overflow-hidden">
+        <ClientProtection />
         {children}
       </body>
     </html>
