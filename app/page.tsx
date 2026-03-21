@@ -5,10 +5,17 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { lessonsConfig, getAllLessons } from '../data/lessonsConfig';
 
+type CurrentUser = {
+  fullName?: string;
+  username?: string;
+};
+
 function HomeContent() {
   const allLessons = getAllLessons();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Initialize from URL search param if available
   const initialIndex = parseInt(searchParams.get('index') || '0', 10);
@@ -21,6 +28,22 @@ function HomeContent() {
       setCurrentLessonIndex(urlIndex);
     }
   }, [searchParams, allLessons.length]);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me', { method: 'GET' });
+        const result = (await response.json()) as {
+          user: CurrentUser | null;
+        };
+        setCurrentUser(result.user);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   const currentLesson = allLessons[currentLessonIndex] || allLessons[0];
   const totalLessons = allLessons.length;
@@ -46,9 +69,20 @@ function HomeContent() {
       updateUrlIndex(newIndex);
     }
   };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      setCurrentUser(null);
+      setShowUserMenu(false);
+    }
+  };
+
   return (
     <main className="h-full md:h-full flex items-stretch justify-center p-0 md:p-0 animate-fade-in w-full overflow-y-auto md:overflow-hidden scrollbar-hide">
-      <div className="w-full bg-tm-panel flex flex-col md:flex-row min-h-screen md:h-full relative z-10 overflow-y-auto md:overflow-hidden scrollbar-hide">
+      <div className="w-full bg-tm-panel flex flex-col min-h-screen md:h-full relative z-10 overflow-y-auto md:overflow-hidden scrollbar-hide">
+        <div className="w-full flex flex-col md:flex-row md:flex-1">
 
         {/* Sidebar / Info Panel */}
         <div className="w-full md:w-[35%] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-8 md:p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 relative overflow-visible md:overflow-y-auto shadow-2xl h-auto md:h-full">
@@ -58,6 +92,48 @@ function HomeContent() {
           <div className="absolute top-[40%] left-[50%] w-40 h-40 bg-sky-500/10 rounded-full blur-[60px]"></div>
 
           <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-8 relative">
+              {currentUser ? (
+                <div className="flex items-center gap-3 relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserMenu((prev) => !prev)}
+                    className="h-11 w-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-lg flex items-center justify-center shadow-lg shadow-indigo-500/30"
+                    title={currentUser.fullName || currentUser.username || 'User'}
+                  >
+                    {(currentUser.fullName?.trim()?.[0] || currentUser.username?.trim()?.[0] || 'U').toUpperCase()}
+                  </button>
+
+                  {showUserMenu ? (
+                    <div className="absolute top-14 left-0 min-w-[120px] rounded-xl border border-white/20 bg-slate-900/95 backdrop-blur px-2 py-2 shadow-xl z-30">
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="w-full text-left text-sm font-semibold text-rose-300 hover:text-rose-200 hover:bg-white/5 rounded-lg px-3 py-2 transition"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 rounded-xl border border-indigo-300/40 bg-white/10 text-white text-sm font-bold hover:bg-white/20 hover:border-indigo-300/70 transition-all duration-300"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-bold shadow-md shadow-indigo-500/30 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+
             {/* App Badge */}
             <div className="flex items-center gap-3 mb-8">
               <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/30">
@@ -246,6 +322,7 @@ function HomeContent() {
               <div className="text-[9px] font-bold uppercase tracking-widest text-slate-600 italic">Finger Guidance Pro</div>
             </div>
           </div>
+        </div>
         </div>
 
       </div>
