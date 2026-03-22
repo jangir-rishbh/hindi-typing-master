@@ -2,6 +2,14 @@
 
 import { useEffect } from 'react';
 
+function isFormTextField(target: EventTarget | null): boolean {
+  if (!target || !(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  return false;
+}
+
 export default function ClientProtection() {
   useEffect(() => {
     // Disable Right-Click
@@ -27,14 +35,20 @@ export default function ClientProtection() {
       if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
       }
-      // Disable Ctrl+C, Ctrl+V, Ctrl+X (Clipboard)
+      // Disable Ctrl+C, Ctrl+V, Ctrl+X except in normal form fields (login, profile, etc.)
       if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V' || e.key === 'x' || e.key === 'X')) {
+        if (isFormTextField(e.target)) {
+          return;
+        }
         e.preventDefault();
       }
     };
 
-    // Disable Clipboard events directly as a secondary measure
+    // Disable Clipboard events on the page except in form fields (so email/password paste works)
     const handleClipboard = (e: ClipboardEvent) => {
+      if (isFormTextField(e.target)) {
+        return;
+      }
       e.preventDefault();
     };
 

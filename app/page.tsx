@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { lessonsConfig, getAllLessons } from '../data/lessonsConfig';
@@ -16,10 +16,28 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Initialize from URL search param if available
   const initialIndex = parseInt(searchParams.get('index') || '0', 10);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(initialIndex);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   // Update state if URL param changes
   useEffect(() => {
@@ -94,23 +112,66 @@ function HomeContent() {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-8 relative">
               {currentUser ? (
-                <div className="flex items-center gap-3 relative">
+                <div className="flex items-center gap-3 relative min-w-0" ref={menuRef}>
                   <button
                     type="button"
                     onClick={() => setShowUserMenu((prev) => !prev)}
-                    className="h-11 w-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-lg flex items-center justify-center shadow-lg shadow-indigo-500/30"
+                    className="h-14 w-14 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-xl flex items-center justify-center shadow-lg shadow-indigo-500/30"
                     title={currentUser.fullName || currentUser.username || 'User'}
                   >
                     {(currentUser.fullName?.trim()?.[0] || currentUser.username?.trim()?.[0] || 'U').toUpperCase()}
                   </button>
+                  <span
+                    className="min-w-0 text-sm font-bold text-white/95 truncate max-w-[10rem] sm:max-w-[14rem]"
+                    title={currentUser.fullName?.trim() || currentUser.username || 'User'}
+                  >
+                    {currentUser.fullName?.trim() || currentUser.username || 'User'}
+                  </span>
 
                   {showUserMenu ? (
-                    <div className="absolute top-14 left-0 min-w-[120px] rounded-xl border border-white/20 bg-slate-900/95 backdrop-blur px-2 py-2 shadow-xl z-30">
+                    <div className="absolute top-[calc(100%+0.5rem)] left-0 min-w-[160px] rounded-xl border border-white/20 bg-slate-900/95 backdrop-blur px-2 py-2 shadow-xl z-30">
+                      <Link
+                        href="/profile"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-2.5 w-full text-left text-sm font-semibold text-white/90 hover:text-white hover:bg-white/5 rounded-lg px-3 py-2 transition"
+                      >
+                        <svg
+                          className="w-4 h-4 shrink-0 text-indigo-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit Profile
+                      </Link>
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="w-full text-left text-sm font-semibold text-rose-300 hover:text-rose-200 hover:bg-white/5 rounded-lg px-3 py-2 transition"
+                        className="flex items-center gap-2.5 w-full text-left text-sm font-semibold text-rose-300 hover:text-rose-200 hover:bg-white/5 rounded-lg px-3 py-2 transition"
                       >
+                        <div className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0">
+                          <svg
+                            className="w-4 h-4 text-rose-300"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
+                          </svg>
+                        </div>
                         Logout
                       </button>
                     </div>
